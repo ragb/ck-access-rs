@@ -1,0 +1,1099 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LiveSet",
+  "description": "One Live Set patch: common settings, EQ, four Zones (1..4) and three Parts (A/B/C). The Audio Trigger wave-file path is kept as a string.",
+  "type": "object",
+  "required": [
+    "common",
+    "eq",
+    "parts",
+    "zones"
+  ],
+  "properties": {
+    "audio_trigger_path": {
+      "description": "Path to the audio-trigger sample file (may be empty).",
+      "type": "string"
+    },
+    "common": {
+      "$ref": "#/definitions/LiveSetCommon"
+    },
+    "eq": {
+      "$ref": "#/definitions/LiveSetEq"
+    },
+    "extra_blocks": {
+      "description": "Blocks present in the dump that this crate doesn't model individually (Soundmondo format version, other firmware-specific blocks), kept verbatim.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/RawBlock"
+      }
+    },
+    "parts": {
+      "description": "The three Parts (A, B, C).",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Part"
+      }
+    },
+    "rotary": {
+      "description": "Rotary Speaker settings (firmware v1.10+). `None` on firmware that doesn't emit the `46 20 00` block.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/RotarySpeaker"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "zones": {
+      "description": "The four Zones (master-keyboard transmit configs).",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Zone"
+      }
+    }
+  },
+  "definitions": {
+    "AudioTriggerKey": {
+      "description": "Which held key triggers the audio sample (offset 0x35).",
+      "type": "string",
+      "enum": [
+        "lowest",
+        "highest"
+      ]
+    },
+    "AudioTriggerPlayMode": {
+      "description": "Audio-trigger playback behaviour (offset 0x36). `Hold` added in CK firmware v1.10.",
+      "type": "string",
+      "enum": [
+        "one_shot",
+        "play_stop",
+        "play_pause",
+        "hold"
+      ]
+    },
+    "DelayType": {
+      "description": "Master Delay algorithm (offset 0x28).",
+      "type": "string",
+      "enum": [
+        "digital",
+        "analog",
+        "cross",
+        "tempo"
+      ]
+    },
+    "DriveType": {
+      "description": "Drive/amp model (offset 0x57).",
+      "type": "string",
+      "enum": [
+        "over_drive",
+        "distortion",
+        "rotary_a",
+        "rotary_b",
+        "comp"
+      ]
+    },
+    "EffectSelect": {
+      "description": "Which insert-effect slot the part edits (offset 0x1B).",
+      "type": "string",
+      "enum": [
+        "effect1",
+        "effect2"
+      ]
+    },
+    "ExternalKeyboard": {
+      "description": "External-keyboard routing (offset 0x39).",
+      "type": "string",
+      "enum": [
+        "ext_int",
+        "ext_only",
+        "off"
+      ]
+    },
+    "LiveSetCommon": {
+      "description": "The Live Set **Common** block.",
+      "type": "object",
+      "required": [
+        "ad_effect_1_depth",
+        "ad_effect_1_rate",
+        "ad_effect_1_type",
+        "ad_effect_2_depth",
+        "ad_effect_2_rate",
+        "ad_effect_2_type",
+        "ad_eq_high_freq",
+        "ad_eq_high_gain",
+        "ad_eq_low_freq",
+        "ad_eq_low_gain",
+        "ad_eq_mid_freq",
+        "ad_eq_mid_gain",
+        "ad_noise_gate_switch",
+        "ad_noise_gate_threshold",
+        "ad_volume",
+        "advanced_zone",
+        "audio_trigger_key",
+        "audio_trigger_play_mode",
+        "audio_trigger_switch",
+        "audio_trigger_volume",
+        "delay_depth",
+        "delay_switch",
+        "delay_tempo_time",
+        "delay_time",
+        "delay_type",
+        "foot_pedal_1_assign",
+        "foot_pedal_1_limit_high",
+        "foot_pedal_1_limit_low",
+        "foot_pedal_2_assign",
+        "foot_pedal_2_limit_high",
+        "foot_pedal_2_limit_low",
+        "layer_split_mode",
+        "live_set_eq_mode",
+        "master_keyboard_mode",
+        "mod_wheel_assign",
+        "name",
+        "reverb_depth",
+        "reverb_switch",
+        "reverb_type",
+        "rotary_speed",
+        "rotary_stop",
+        "sound_transpose",
+        "split_point",
+        "split_point_a_b",
+        "split_point_b_c",
+        "tempo_x10"
+      ],
+      "properties": {
+        "ad_effect_1_depth": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "ad_effect_1_rate": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "ad_effect_1_type": {
+          "description": "A/D effect 1 type, raw 0x00..=0x22.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "ad_effect_2_depth": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "ad_effect_2_rate": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "ad_effect_2_type": {
+          "description": "A/D effect 2 type, raw 0x00..=0x22.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "ad_eq_high_freq": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "ad_eq_high_gain": {
+          "type": "integer",
+          "format": "int8"
+        },
+        "ad_eq_low_freq": {
+          "description": "A/D input EQ low frequency, raw 0x04..=0x28.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "ad_eq_low_gain": {
+          "description": "A/D input EQ low gain, −12..=+12 dB.",
+          "type": "integer",
+          "format": "int8"
+        },
+        "ad_eq_mid_freq": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "ad_eq_mid_gain": {
+          "type": "integer",
+          "format": "int8"
+        },
+        "ad_noise_gate_switch": {
+          "type": "boolean"
+        },
+        "ad_noise_gate_threshold": {
+          "description": "Noise-gate threshold, raw 0x36..=0x61 (−73 .. −30 dB).",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "ad_volume": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "advanced_zone": {
+          "type": "boolean"
+        },
+        "audio_trigger_key": {
+          "$ref": "#/definitions/AudioTriggerKey"
+        },
+        "audio_trigger_play_mode": {
+          "$ref": "#/definitions/AudioTriggerPlayMode"
+        },
+        "audio_trigger_switch": {
+          "type": "boolean"
+        },
+        "audio_trigger_volume": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "delay_depth": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "delay_switch": {
+          "type": "boolean"
+        },
+        "delay_tempo_time": {
+          "description": "Tempo-delay note value, raw 0..=14.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "delay_time": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "delay_type": {
+          "$ref": "#/definitions/DelayType"
+        },
+        "foot_pedal_1_assign": {
+          "description": "Foot Pedal 1 assignment, raw 0..=120.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "foot_pedal_1_limit_high": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "foot_pedal_1_limit_low": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "foot_pedal_2_assign": {
+          "description": "Foot Pedal 2 assignment, raw 0..=120.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "foot_pedal_2_limit_high": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "foot_pedal_2_limit_low": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "layer_split_mode": {
+          "description": "Layer/split layout, raw 0..=3: 0=ABC, 1=A/BC, 2=AB/C, 3=A/B/C.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "live_set_eq_mode": {
+          "type": "boolean"
+        },
+        "master_keyboard_mode": {
+          "type": "boolean"
+        },
+        "mod_wheel_assign": {
+          "description": "Modulation wheel assignment, raw 0..=120 (control number; 120 = USB audio volume).",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "name": {
+          "description": "Live Set name, up to 15 ASCII characters.",
+          "type": "string"
+        },
+        "reserved": {
+          "description": "Reserved/undocumented bytes captured verbatim so writes round-trip exactly.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RawByte"
+          }
+        },
+        "reverb_depth": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "reverb_switch": {
+          "type": "boolean"
+        },
+        "reverb_type": {
+          "$ref": "#/definitions/ReverbType"
+        },
+        "rotary_speed": {
+          "$ref": "#/definitions/RotarySpeed"
+        },
+        "rotary_stop": {
+          "type": "boolean"
+        },
+        "sound_transpose": {
+          "description": "Sound transpose, −12..=+12 semitones.",
+          "type": "integer",
+          "format": "int8"
+        },
+        "split_point": {
+          "description": "Split point (two-way split), raw 1..=127 (note number).",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "split_point_a_b": {
+          "description": "Split point A–B (three-way), raw 1..=127.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "split_point_b_c": {
+          "description": "Split point B–C (three-way), raw 2..=127.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "tempo_x10": {
+          "description": "Tempo ×10 (e.g. `1200` = 120.0 BPM); raw range 420..=2400.",
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        }
+      }
+    },
+    "LiveSetEq": {
+      "description": "The Live Set **EQ** block — a 3-band EQ, same layout as the System Master EQ.",
+      "type": "object",
+      "required": [
+        "high_freq",
+        "high_gain",
+        "low_freq",
+        "low_gain",
+        "mid_freq",
+        "mid_gain"
+      ],
+      "properties": {
+        "high_freq": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "high_gain": {
+          "type": "integer",
+          "format": "int8"
+        },
+        "low_freq": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "low_gain": {
+          "description": "Low gain, −12..=+12 dB.",
+          "type": "integer",
+          "format": "int8"
+        },
+        "mid_freq": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "mid_gain": {
+          "type": "integer",
+          "format": "int8"
+        },
+        "reserved": {
+          "description": "Reserved/undocumented bytes captured verbatim so writes round-trip exactly.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RawByte"
+          }
+        }
+      }
+    },
+    "MonoPoly": {
+      "description": "Voice allocation (offset 0x20).",
+      "type": "string",
+      "enum": [
+        "mono",
+        "poly"
+      ]
+    },
+    "MonoType": {
+      "description": "Mono/portamento behaviour (offset 0x21).",
+      "type": "string",
+      "enum": [
+        "normal",
+        "fingered_portamento",
+        "full_time_portamento"
+      ]
+    },
+    "Part": {
+      "description": "One Live Set Part.",
+      "type": "object",
+      "required": [
+        "amplifier_modulation_depth",
+        "category_voices",
+        "current_category",
+        "drawbars",
+        "drive_depth",
+        "drive_switch",
+        "drive_type",
+        "effect_1_depth",
+        "effect_1_rate",
+        "effect_1_switch",
+        "effect_1_type",
+        "effect_2_depth",
+        "effect_2_rate",
+        "effect_2_switch",
+        "effect_2_type",
+        "effect_select",
+        "eg_attack",
+        "eg_release",
+        "eg_switch",
+        "external_keyboard",
+        "filter_cutoff",
+        "filter_modulation_depth",
+        "filter_resonance",
+        "filter_switch",
+        "modulation_speed",
+        "mono_poly",
+        "mono_type",
+        "note_shift",
+        "pan",
+        "part_color",
+        "part_selected",
+        "part_switch",
+        "part_volume",
+        "percussion_decay",
+        "percussion_switch",
+        "percussion_type",
+        "percussion_volume",
+        "pitch_bend_range",
+        "pitch_modulation_depth",
+        "portamento_mode",
+        "portamento_time",
+        "receive_expression",
+        "receive_soft",
+        "receive_sostenuto",
+        "receive_sustain",
+        "touch_sensitivity_depth",
+        "touch_sensitivity_offset",
+        "unison_detune",
+        "unison_switch",
+        "unison_type",
+        "unison_volume",
+        "vibrato_chorus_switch",
+        "vibrato_chorus_type"
+      ],
+      "properties": {
+        "amplifier_modulation_depth": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "category_voices": {
+          "description": "Selected voice number per category (10 entries). Each is the absolute voice number for that category — see [`crate::voices`].",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint16",
+            "minimum": 0.0
+          }
+        },
+        "current_category": {
+          "description": "Active category, 0..=9 (indexes `category_voices`).",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "drawbars": {
+          "description": "Organ drawbars, 9 entries: 16', 5⅓', 8', 4', 2⅔', 2', 1⅗', 1⅓', 1'.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint8",
+            "minimum": 0.0
+          }
+        },
+        "drive_depth": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "drive_switch": {
+          "type": "boolean"
+        },
+        "drive_type": {
+          "$ref": "#/definitions/DriveType"
+        },
+        "effect_1_depth": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "effect_1_rate": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "effect_1_switch": {
+          "type": "boolean"
+        },
+        "effect_1_type": {
+          "description": "Effect 1 type, raw 0x00..=0x23.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "effect_2_depth": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "effect_2_rate": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "effect_2_switch": {
+          "type": "boolean"
+        },
+        "effect_2_type": {
+          "description": "Effect 2 type, raw 0x00..=0x23.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "effect_select": {
+          "$ref": "#/definitions/EffectSelect"
+        },
+        "eg_attack": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "eg_release": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "eg_switch": {
+          "type": "boolean"
+        },
+        "external_keyboard": {
+          "$ref": "#/definitions/ExternalKeyboard"
+        },
+        "filter_cutoff": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "filter_modulation_depth": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "filter_resonance": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "filter_switch": {
+          "type": "boolean"
+        },
+        "modulation_speed": {
+          "description": "Modulation speed, −64..=+63.",
+          "type": "integer",
+          "format": "int8"
+        },
+        "mono_poly": {
+          "$ref": "#/definitions/MonoPoly"
+        },
+        "mono_type": {
+          "$ref": "#/definitions/MonoType"
+        },
+        "note_shift": {
+          "description": "Note shift, −24..=+24 semitones.",
+          "type": "integer",
+          "format": "int8"
+        },
+        "pan": {
+          "description": "Stereo pan, −63..=+63 (L63 .. C .. R63). Added in CK firmware v1.10 (Part block offset 0x1C; device-verified by capture-and-diff).",
+          "type": "integer",
+          "format": "int8"
+        },
+        "part_color": {
+          "description": "Part colour, 0..=11 (0=Red .. 11=Rose).",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "part_selected": {
+          "type": "boolean"
+        },
+        "part_switch": {
+          "type": "boolean"
+        },
+        "part_volume": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "percussion_decay": {
+          "$ref": "#/definitions/PercussionDecay"
+        },
+        "percussion_switch": {
+          "type": "boolean"
+        },
+        "percussion_type": {
+          "$ref": "#/definitions/PercussionType"
+        },
+        "percussion_volume": {
+          "$ref": "#/definitions/PercussionVolume"
+        },
+        "pitch_bend_range": {
+          "description": "Pitch bend range, −24..=+24 semitones.",
+          "type": "integer",
+          "format": "int8"
+        },
+        "pitch_modulation_depth": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "portamento_mode": {
+          "$ref": "#/definitions/PortamentoMode"
+        },
+        "portamento_time": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "receive_expression": {
+          "type": "boolean"
+        },
+        "receive_soft": {
+          "type": "boolean"
+        },
+        "receive_sostenuto": {
+          "type": "boolean"
+        },
+        "receive_sustain": {
+          "type": "boolean"
+        },
+        "reserved": {
+          "description": "Reserved/undocumented bytes captured verbatim so writes round-trip exactly.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RawByte"
+          }
+        },
+        "touch_sensitivity_depth": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "touch_sensitivity_offset": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "unison_detune": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "unison_switch": {
+          "type": "boolean"
+        },
+        "unison_type": {
+          "$ref": "#/definitions/UnisonType"
+        },
+        "unison_volume": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "vibrato_chorus_switch": {
+          "type": "boolean"
+        },
+        "vibrato_chorus_type": {
+          "$ref": "#/definitions/VibratoChorusType"
+        }
+      }
+    },
+    "PercussionDecay": {
+      "description": "Organ percussion decay (offset 0x4B).",
+      "type": "string",
+      "enum": [
+        "slow",
+        "fast"
+      ]
+    },
+    "PercussionType": {
+      "description": "Organ percussion harmonic (offset 0x4A).",
+      "type": "string",
+      "enum": [
+        "third",
+        "second"
+      ]
+    },
+    "PercussionVolume": {
+      "description": "Organ percussion volume (offset 0x4C).",
+      "type": "string",
+      "enum": [
+        "normal",
+        "soft"
+      ]
+    },
+    "PortamentoMode": {
+      "description": "Portamento time interpretation (offset 0x24).",
+      "type": "string",
+      "enum": [
+        "rate",
+        "time"
+      ]
+    },
+    "RawBlock": {
+      "description": "A bulk block this crate doesn't model, kept verbatim for byte-exact re-sync.",
+      "type": "object",
+      "required": [
+        "address",
+        "data"
+      ],
+      "properties": {
+        "address": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint8",
+            "minimum": 0.0
+          },
+          "maxItems": 3,
+          "minItems": 3
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint8",
+            "minimum": 0.0
+          }
+        }
+      }
+    },
+    "RawByte": {
+      "description": "A single raw byte the typed model doesn't interpret — a documented-reserved offset that the device nonetheless populates, or a trailing byte added by newer firmware. Captured so every area round-trips byte-exact even where the manual is silent.",
+      "type": "object",
+      "required": [
+        "offset",
+        "value"
+      ],
+      "properties": {
+        "offset": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "value": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        }
+      }
+    },
+    "ReverbType": {
+      "description": "Master Reverb algorithm (offset 0x2D).",
+      "type": "string",
+      "enum": [
+        "hall",
+        "room",
+        "plate"
+      ]
+    },
+    "RotarySpeaker": {
+      "description": "The Rotary Speaker block (Rotary A + Rotary B).\n\nSpeed values are RPM rendered to a 0..=127 index by the device; Balance and Acceleration/Transition are likewise stored as raw 0..=127 indices, kept raw here because their engineering-unit mapping isn't a simple formula.",
+      "type": "object",
+      "required": [
+        "a_balance",
+        "a_horn_acceleration",
+        "a_horn_deceleration",
+        "a_horn_fast",
+        "a_horn_slow",
+        "a_rotor_acceleration",
+        "a_rotor_deceleration",
+        "a_rotor_fast",
+        "a_rotor_slow",
+        "a_stereo_mono",
+        "b_balance",
+        "b_horn_fast",
+        "b_horn_slow",
+        "b_horn_transition",
+        "b_rotor_fast",
+        "b_rotor_slow",
+        "b_rotor_transition",
+        "b_stereo_mono"
+      ],
+      "properties": {
+        "a_balance": {
+          "description": "Rotary A balance (horn vs rotor), raw 0..=127 (R63>H .. R=H .. R<H63).",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "a_horn_acceleration": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "a_horn_deceleration": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "a_horn_fast": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "a_horn_slow": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "a_rotor_acceleration": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "a_rotor_deceleration": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "a_rotor_fast": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "a_rotor_slow": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "a_stereo_mono": {
+          "$ref": "#/definitions/StereoMono"
+        },
+        "b_balance": {
+          "description": "Rotary B balance, raw 0..=127.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "b_horn_fast": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "b_horn_slow": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "b_horn_transition": {
+          "description": "Rotary B horn transition, 0..=127 (default 118).",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "b_rotor_fast": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "b_rotor_slow": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "b_rotor_transition": {
+          "description": "Rotary B rotor transition, 0..=127 (default 116).",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "b_stereo_mono": {
+          "$ref": "#/definitions/StereoMono"
+        },
+        "reserved": {
+          "description": "Reserved/undocumented bytes captured verbatim so writes round-trip exactly.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RawByte"
+          }
+        }
+      }
+    },
+    "RotarySpeed": {
+      "description": "Rotary speaker speed (offset 0x30).",
+      "type": "string",
+      "enum": [
+        "slow",
+        "fast"
+      ]
+    },
+    "StereoMono": {
+      "description": "Rotary output mode (offsets 0x01 / 0x0E).",
+      "type": "string",
+      "enum": [
+        "stereo",
+        "mono"
+      ]
+    },
+    "UnisonType": {
+      "description": "Unison voicing (offset 0x2D).",
+      "type": "string",
+      "enum": [
+        "multi_layer",
+        "harmonics",
+        "sub_harmonics"
+      ]
+    },
+    "VibratoChorusType": {
+      "description": "Vibrato/Chorus program (offset 0x4F).",
+      "type": "string",
+      "enum": [
+        "v1",
+        "c1",
+        "v2",
+        "c2",
+        "v3",
+        "c3"
+      ]
+    },
+    "Zone": {
+      "description": "One Zone.",
+      "type": "object",
+      "required": [
+        "midi_bank_lsb",
+        "midi_bank_msb",
+        "midi_pan",
+        "midi_program",
+        "midi_volume",
+        "note_limit_high",
+        "note_limit_low",
+        "transmit_channel",
+        "transmit_controller_flags",
+        "transmit_flags",
+        "transpose_octave",
+        "transpose_semitone",
+        "zone_switch"
+      ],
+      "properties": {
+        "midi_bank_lsb": {
+          "description": "MIDI bank select LSB, 0..=127.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "midi_bank_msb": {
+          "description": "MIDI bank select MSB, 0..=127.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "midi_pan": {
+          "description": "MIDI pan, −64..=+63 (L64 .. C .. R63).",
+          "type": "integer",
+          "format": "int8"
+        },
+        "midi_program": {
+          "description": "MIDI program number, raw 0..=127 (program 1–128).",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "midi_volume": {
+          "description": "MIDI volume, 0..=127.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "note_limit_high": {
+          "description": "Note limit high, 0..=127 (C-2 .. G8).",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "note_limit_low": {
+          "description": "Note limit low, 0..=127 (C-2 .. G8).",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "reserved": {
+          "description": "Reserved/undocumented bytes captured verbatim so writes round-trip exactly.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RawByte"
+          }
+        },
+        "transmit_channel": {
+          "description": "Transmit channel, raw `0..=0x0F` (= MIDI ch 1–16).",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "transmit_controller_flags": {
+          "description": "Controller transmit bitfield, raw `0x00..=0x3F`: bit0 Pitch Bend, bit1 Modulation, bit2 Foot Pedal 1, bit3 Foot Pedal 2.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "transmit_flags": {
+          "description": "Transmit-enable bitfield, raw `0x00..=0x1F`: bit0 Bank Select, bit1 Program Change, bit2 Volume, bit3 Pan.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "transpose_octave": {
+          "description": "Transpose (octave), −3..=+3.",
+          "type": "integer",
+          "format": "int8"
+        },
+        "transpose_semitone": {
+          "description": "Transpose (semitone), −11..=+11.",
+          "type": "integer",
+          "format": "int8"
+        },
+        "zone_switch": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+/target
+**/*.rs.bk
+Cargo.lock.bak
+
+# WASM build outputs
+/ck-wasm/pkg
+/ck-wasm/target
+
+# Python explorer venvs and caches
+tools/explore/.venv/
+tools/explore/__pycache__/
+tools/explore/*.pyc
+
+# Captured SysEx that's experimental / not yet promoted to fixtures
+tools/explore/captures/
+
+# YAML dumps the user produces by running `ck dump`
+tools/explore/dumps/
+
+# Reference manuals / data lists downloaded for one-off use
+*.pdf
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Claude Code per-project state
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db

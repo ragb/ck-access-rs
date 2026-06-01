@@ -1,0 +1,22 @@
+[package]
+name = "ck-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Yamaha CK61/CK88 SysEx codec (pure, no MIDI/file I/O)."
+
+[features]
+default = []
+# Enabled by the wasm crate. Adds Tsify derives so types render as TS.
+tsify = ["dep:tsify-next", "dep:wasm-bindgen"]
+# Enabled by the CLI when emitting JSON Schema. Adds schemars derives.
+schema = ["dep:schemars"]
+
+[dependencies]
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_yaml = { workspace = true }
+tsify-next = { workspace = true, optional = true }
+wasm-bindgen = { workspace = true, optional = true }
+schemars = { workspace = true, optional = true }

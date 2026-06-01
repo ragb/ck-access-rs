@@ -1,0 +1,26 @@
+[package]
+name = "ck-wasm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "WASM + TypeScript bindings for ck-core."
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+ck-core = { workspace = true, features = ["tsify"] }
+wasm-bindgen = { workspace = true }
+serde = { workspace = true }
+serde-wasm-bindgen = { workspace = true }
+tsify-next = { workspace = true }
+getrandom = { workspace = true }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
+
+# wasm-opt bundled with wasm-pack can lag rustc's emitted wasm features; the
+# binary is fine without the post-processing step.
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
