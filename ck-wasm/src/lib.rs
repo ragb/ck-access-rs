@@ -12,9 +12,10 @@ use ck_core::yaml::{
     live_set_from_yaml_str, live_set_to_yaml_string, system_from_yaml_str, system_to_yaml_string,
 };
 use ck_core::{
-    classify_inbound as core_classify_inbound, identify_reply, identity_request, voices,
-    InboundMessage, LiveSet, LiveSetCommon, LiveSetEq, MasterEq, Message, Part, RotarySpeaker,
-    System, SystemCommon, Zone, ROTARY_SPECS,
+    classify_inbound as core_classify_inbound, identify_reply, identity_request,
+    select_live_set_messages, voices, InboundMessage, LiveSet, LiveSetCommon, LiveSetEq, MasterEq,
+    Message, Part, RotarySpeaker, System, SystemCommon, Zone, PAGES, ROTARY_SPECS,
+    SOUNDS_PER_PAGE, TOTAL_LIVE_SETS,
 };
 use serde::{Deserialize, Serialize};
 use tsify_next::Tsify;
@@ -338,6 +339,39 @@ pub fn bulk_header_base() -> Vec<u8> {
 #[wasm_bindgen(js_name = bulkFooterBase)]
 pub fn bulk_footer_base() -> Vec<u8> {
     BULK_FOOTER_BASE.to_vec()
+}
+
+// === Live Set selection (Bank Select + Program Change) ===
+
+/// Number of Live Set pages on the CK (20).
+#[wasm_bindgen(js_name = liveSetPageCount)]
+pub fn live_set_page_count() -> u8 {
+    PAGES
+}
+
+/// Number of Live Set Sounds per page (8).
+#[wasm_bindgen(js_name = liveSetSoundsPerPage)]
+pub fn live_set_sounds_per_page() -> u8 {
+    SOUNDS_PER_PAGE
+}
+
+/// Total user Live Set Sounds on the CK (160).
+#[wasm_bindgen(js_name = liveSetTotal)]
+pub fn live_set_total() -> u16 {
+    TOTAL_LIVE_SETS
+}
+
+/// Build the three MIDI frames that switch the CK to a specific Live Set
+/// Sound (Bank Select MSB=63, Bank Select LSB=page-1, Program Change=sound-1).
+///
+/// `channel` is 1-based (1..=16); `page` is 1-based (1..=20); `sound` is
+/// 1-based (1..=8). Returns the three frames in send order; the CK only
+/// commits the bank latch once the Program Change arrives.
+#[wasm_bindgen(js_name = selectLiveSet)]
+pub fn select_live_set(channel: u8, page: u8, sound: u8) -> Result<JsValue, JsError> {
+    let frames =
+        select_live_set_messages(channel, page, sound).map_err(|e| JsError::new(&e.to_string()))?;
+    serde_wasm_bindgen::to_value(&frames.to_vec()).map_err(|e| JsError::new(&e.to_string()))
 }
 
 // === whole Live Set assembly ===

@@ -21,6 +21,7 @@ pub mod codec;
 pub mod document;
 pub mod inbound;
 pub mod live_set;
+pub mod live_set_select;
 pub mod part;
 pub mod rotary;
 #[cfg(feature = "schema")]
@@ -36,6 +37,10 @@ pub use codec::CodecError;
 pub use document::{LiveSet, RawBlock, System};
 pub use inbound::{classify_inbound, InboundMessage};
 pub use live_set::{LiveSetCommon, LiveSetEq};
+pub use live_set_select::{
+    select_live_set_messages, SelectError, LIVE_SET_BANK_MSB, PAGES, SOUNDS_PER_PAGE,
+    TOTAL_LIVE_SETS,
+};
 pub use part::Part;
 pub use rotary::{RotaryParamSpec, RotarySpeaker, StereoMono, ROTARY_SPECS};
 pub use sysex::{
