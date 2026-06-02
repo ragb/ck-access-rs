@@ -14,8 +14,8 @@ use ck_core::yaml::{
 use ck_core::{
     classify_inbound as core_classify_inbound, identify_reply, identity_request,
     select_live_set_messages, voices, InboundMessage, LiveSet, LiveSetCommon, LiveSetEq, MasterEq,
-    Message, Part, RotarySpeaker, System, SystemCommon, Zone, PAGES, ROTARY_SPECS,
-    SOUNDS_PER_PAGE, TOTAL_LIVE_SETS,
+    Message, Part, RotarySpeaker, System, SystemCommon, Zone, PAGES, ROTARY_SPECS, SOUNDS_PER_PAGE,
+    TOTAL_LIVE_SETS,
 };
 use serde::{Deserialize, Serialize};
 use tsify_next::Tsify;
@@ -431,9 +431,10 @@ mod tests {
     #[wasm_bindgen_test]
     fn part_round_trips_via_core() {
         let mut bytes = vec![0u8; 105];
-        bytes[0x16] = 0x40;
-        bytes[0x30] = 0x40;
-        bytes[0x34] = 0x40;
+        bytes[0x16] = 0x40; // note shift (centred)
+        bytes[0x1C] = 0x40; // pan (centred, v1.10)
+        bytes[0x30] = 0x40; // pitch bend range (centred)
+        bytes[0x34] = 0x40; // modulation speed (centred)
         let p = Part::from_bytes(&bytes).unwrap();
         assert_eq!(p.to_bytes().unwrap(), bytes);
     }
