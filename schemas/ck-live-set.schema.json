@@ -1,3 +1,78 @@
+   Compiling memchr v2.8.1
+   Compiling windows-link v0.2.1
+   Compiling cfg-if v1.0.4
+   Compiling unicode-ident v1.0.24
+   Compiling futures-core v0.3.32
+   Compiling futures-task v0.3.32
+   Compiling once_cell v1.21.4
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling slab v0.4.12
+   Compiling pin-project-lite v0.2.17
+   Compiling itoa v1.0.18
+   Compiling once_cell_polyfill v1.70.2
+   Compiling anstyle v1.0.14
+   Compiling utf8parse v0.2.2
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling parking_lot_core v0.9.12
+   Compiling colorchoice v1.0.5
+   Compiling regex-syntax v0.8.10
+   Compiling schemars v0.8.22
+   Compiling smallvec v1.15.1
+   Compiling scopeguard v1.2.0
+   Compiling hashbrown v0.17.1
+   Compiling serde_core v1.0.228
+   Compiling wasm-bindgen-shared v0.2.122
+   Compiling serde v1.0.228
+   Compiling windows-sys v0.61.2
+   Compiling zmij v1.0.21
+   Compiling serde_json v1.0.150
+   Compiling equivalent v1.0.2
+   Compiling thiserror v1.0.69
+   Compiling heck v0.5.0
+   Compiling unsafe-libyaml v0.2.11
+   Compiling futures-util v0.3.32
+   Compiling windows-implement v0.56.0
+   Compiling windows-interface v0.56.0
+   Compiling schemars_derive v0.8.22
+   Compiling clap_lex v1.1.0
+   Compiling log v0.4.30
+   Compiling ryu v1.0.23
+   Compiling strsim v0.11.1
+   Compiling dyn-clone v1.0.20
+   Compiling anstyle-parse v1.0.0
+   Compiling aho-corasick v1.1.4
+   Compiling anyhow v1.0.102
+   Compiling bitflags v1.3.2
+   Compiling jiff v0.2.28
+   Compiling lock_api v0.4.14
+   Compiling wasm-bindgen v0.2.122
+   Compiling indexmap v2.14.0
+   Compiling clap_derive v4.6.1
+   Compiling anstyle-wincon v3.0.11
+   Compiling anstyle-query v1.1.5
+   Compiling regex-automata v0.4.14
+   Compiling anstream v1.0.0
+   Compiling windows-targets v0.52.6
+   Compiling windows-result v0.1.2
+   Compiling parking_lot v0.12.5
+   Compiling windows-core v0.56.0
+   Compiling clap_builder v4.6.0
+   Compiling js-sys v0.3.99
+   Compiling serde_yaml v0.9.34+deprecated
+   Compiling windows v0.56.0
+   Compiling regex v1.12.3
+   Compiling env_filter v1.0.1
+   Compiling env_logger v0.11.10
+   Compiling clap v4.6.1
+   Compiling midir v0.10.4
+   Compiling web-sys v0.3.99
+   Compiling serde-wasm-bindgen v0.6.5
+   Compiling gloo-utils v0.2.0
+   Compiling tsify-next v0.5.6
+   Compiling ck-core v0.1.0 (C:\Users\ruian\Documents\dev\ck-access-rs\ck-core)
+   Compiling ck v0.1.0 (C:\Users\ruian\Documents\dev\ck-access-rs\ck)
+    Finished `release` profile [optimized] target(s) in 24.45s
+     Running `target\release\ck.exe schema live-set`
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "LiveSet",
@@ -1006,9 +1081,9 @@
         "midi_volume",
         "note_limit_high",
         "note_limit_low",
+        "transmit",
         "transmit_channel",
-        "transmit_controller_flags",
-        "transmit_flags",
+        "transmit_controllers",
         "transpose_octave",
         "transpose_semitone",
         "zone_switch"
@@ -1062,23 +1137,27 @@
             "$ref": "#/definitions/RawByte"
           }
         },
+        "transmit": {
+          "description": "Which snapshot messages (Bank/PC/Volume/Pan) this Zone sends.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ZoneTransmit"
+            }
+          ]
+        },
         "transmit_channel": {
           "description": "Transmit channel, raw `0..=0x0F` (= MIDI ch 1–16).",
           "type": "integer",
           "format": "uint8",
           "minimum": 0.0
         },
-        "transmit_controller_flags": {
-          "description": "Controller transmit bitfield, raw `0x00..=0x3F`: bit0 Pitch Bend, bit1 Modulation, bit2 Foot Pedal 1, bit3 Foot Pedal 2.",
-          "type": "integer",
-          "format": "uint8",
-          "minimum": 0.0
-        },
-        "transmit_flags": {
-          "description": "Transmit-enable bitfield, raw `0x00..=0x1F`: bit0 Bank Select, bit1 Program Change, bit2 Volume, bit3 Pan.",
-          "type": "integer",
-          "format": "uint8",
-          "minimum": 0.0
+        "transmit_controllers": {
+          "description": "Which live controllers this Zone forwards (Pitch Bend / Mod / FP1 / FP2).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ZoneTransmitControllers"
+            }
+          ]
         },
         "transpose_octave": {
           "description": "Transpose (octave), −3..=+3.",
@@ -1092,6 +1171,74 @@
         },
         "zone_switch": {
           "type": "boolean"
+        }
+      }
+    },
+    "ZoneTransmit": {
+      "description": "Which \"snapshot\" MIDI messages the Zone sends when its Live Set is loaded.\n\nThe byte at Zone offset `0x0C` is a bitmask. Bits 0–3 are named in the CK Owner's Manual; bit 4 sits inside the manual's documented `0x00..=0x1F` range without a published meaning. Any higher bits a device emits (defensive) are kept verbatim in `reserved_bits` so the block round-trips byte-exact.",
+      "type": "object",
+      "required": [
+        "bank_select",
+        "pan",
+        "program_change",
+        "volume"
+      ],
+      "properties": {
+        "bank_select": {
+          "description": "Bit 0: transmit Bank Select MSB+LSB.",
+          "type": "boolean"
+        },
+        "pan": {
+          "description": "Bit 3: transmit Pan (CC 10).",
+          "type": "boolean"
+        },
+        "program_change": {
+          "description": "Bit 1: transmit Program Change.",
+          "type": "boolean"
+        },
+        "reserved_bits": {
+          "description": "Bits 4..=7 captured verbatim — bit 4 falls inside the manual's documented `0x1F` range but isn't named; higher bits aren't expected but are preserved defensively.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "volume": {
+          "description": "Bit 2: transmit Channel Volume (CC 7).",
+          "type": "boolean"
+        }
+      }
+    },
+    "ZoneTransmitControllers": {
+      "description": "Which live controllers the Zone forwards to its transmit channel.\n\nByte at Zone offset `0x0D`. Bits 0–3 are documented; bits 4–5 fall inside the manual's `0x00..=0x3F` documented range without published meaning; higher bits are unexpected but preserved.",
+      "type": "object",
+      "required": [
+        "foot_pedal_1",
+        "foot_pedal_2",
+        "modulation",
+        "pitch_bend"
+      ],
+      "properties": {
+        "foot_pedal_1": {
+          "description": "Bit 2: transmit Foot Pedal 1.",
+          "type": "boolean"
+        },
+        "foot_pedal_2": {
+          "description": "Bit 3: transmit Foot Pedal 2.",
+          "type": "boolean"
+        },
+        "modulation": {
+          "description": "Bit 1: transmit Modulation Wheel (CC 1).",
+          "type": "boolean"
+        },
+        "pitch_bend": {
+          "description": "Bit 0: transmit Pitch Bend.",
+          "type": "boolean"
+        },
+        "reserved_bits": {
+          "description": "Bits 4..=7 captured verbatim — bits 4 and 5 sit inside the manual's `0x3F` documented range without a published meaning.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
         }
       }
     }
