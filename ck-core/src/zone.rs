@@ -12,6 +12,101 @@ use crate::codec::{
     CodecError, RawByte,
 };
 
+fn u8_is_zero(v: &u8) -> bool {
+    *v == 0
+}
+
+/// Which "snapshot" MIDI messages the Zone sends when its Live Set is loaded.
+///
+/// The byte at Zone offset `0x0C` is a bitmask. Bits 0–3 are named in the
+/// CK Owner's Manual; bit 4 sits inside the manual's documented `0x00..=0x1F`
+/// range without a published meaning. Any higher bits a device emits
+/// (defensive) are kept verbatim in `reserved_bits` so the block round-trips
+/// byte-exact.
+#[cfg_attr(feature = "tsify", derive(tsify_next::Tsify))]
+#[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ZoneTransmit {
+    /// Bit 0: transmit Bank Select MSB+LSB.
+    pub bank_select: bool,
+    /// Bit 1: transmit Program Change.
+    pub program_change: bool,
+    /// Bit 2: transmit Channel Volume (CC 7).
+    pub volume: bool,
+    /// Bit 3: transmit Pan (CC 10).
+    pub pan: bool,
+    /// Bits 4..=7 captured verbatim — bit 4 falls inside the manual's
+    /// documented `0x1F` range but isn't named; higher bits aren't expected
+    /// but are preserved defensively.
+    #[serde(default, skip_serializing_if = "u8_is_zero")]
+    pub reserved_bits: u8,
+}
+
+impl ZoneTransmit {
+    pub fn from_byte(b: u8) -> Self {
+        Self {
+            bank_select: b & 0x01 != 0,
+            program_change: b & 0x02 != 0,
+            volume: b & 0x04 != 0,
+            pan: b & 0x08 != 0,
+            reserved_bits: b & 0xF0,
+        }
+    }
+
+    pub fn to_byte(self) -> u8 {
+        (self.bank_select as u8)
+            | (self.program_change as u8) << 1
+            | (self.volume as u8) << 2
+            | (self.pan as u8) << 3
+            | (self.reserved_bits & 0xF0)
+    }
+}
+
+/// Which live controllers the Zone forwards to its transmit channel.
+///
+/// Byte at Zone offset `0x0D`. Bits 0–3 are documented; bits 4–5 fall inside
+/// the manual's `0x00..=0x3F` documented range without published meaning;
+/// higher bits are unexpected but preserved.
+#[cfg_attr(feature = "tsify", derive(tsify_next::Tsify))]
+#[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ZoneTransmitControllers {
+    /// Bit 0: transmit Pitch Bend.
+    pub pitch_bend: bool,
+    /// Bit 1: transmit Modulation Wheel (CC 1).
+    pub modulation: bool,
+    /// Bit 2: transmit Foot Pedal 1.
+    pub foot_pedal_1: bool,
+    /// Bit 3: transmit Foot Pedal 2.
+    pub foot_pedal_2: bool,
+    /// Bits 4..=7 captured verbatim — bits 4 and 5 sit inside the manual's
+    /// `0x3F` documented range without a published meaning.
+    #[serde(default, skip_serializing_if = "u8_is_zero")]
+    pub reserved_bits: u8,
+}
+
+impl ZoneTransmitControllers {
+    pub fn from_byte(b: u8) -> Self {
+        Self {
+            pitch_bend: b & 0x01 != 0,
+            modulation: b & 0x02 != 0,
+            foot_pedal_1: b & 0x04 != 0,
+            foot_pedal_2: b & 0x08 != 0,
+            reserved_bits: b & 0xF0,
+        }
+    }
+
+    pub fn to_byte(self) -> u8 {
+        (self.pitch_bend as u8)
+            | (self.modulation as u8) << 1
+            | (self.foot_pedal_1 as u8) << 2
+            | (self.foot_pedal_2 as u8) << 3
+            | (self.reserved_bits & 0xF0)
+    }
+}
+
 /// One Zone.
 #[cfg_attr(feature = "tsify", derive(tsify_next::Tsify))]
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
@@ -39,12 +134,10 @@ pub struct Zone {
     pub midi_bank_lsb: u8,
     /// MIDI program number, raw 0..=127 (program 1–128).
     pub midi_program: u8,
-    /// Transmit-enable bitfield, raw `0x00..=0x1F`:
-    /// bit0 Bank Select, bit1 Program Change, bit2 Volume, bit3 Pan.
-    pub transmit_flags: u8,
-    /// Controller transmit bitfield, raw `0x00..=0x3F`:
-    /// bit0 Pitch Bend, bit1 Modulation, bit2 Foot Pedal 1, bit3 Foot Pedal 2.
-    pub transmit_controller_flags: u8,
+    /// Which snapshot messages (Bank/PC/Volume/Pan) this Zone sends.
+    pub transmit: ZoneTransmit,
+    /// Which live controllers this Zone forwards (Pitch Bend / Mod / FP1 / FP2).
+    pub transmit_controllers: ZoneTransmitControllers,
     /// Reserved/undocumented bytes captured verbatim so writes round-trip exactly.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub reserved: Vec<RawByte>,
@@ -70,8 +163,8 @@ impl Zone {
             midi_bank_msb: ranged(b[0x09], 0x00, 0x7F, "midi_bank_msb")?,
             midi_bank_lsb: ranged(b[0x0A], 0x00, 0x7F, "midi_bank_lsb")?,
             midi_program: ranged(b[0x0B], 0x00, 0x7F, "midi_program")?,
-            transmit_flags: ranged(b[0x0C], 0x00, 0x1F, "transmit_flags")?,
-            transmit_controller_flags: ranged(b[0x0D], 0x00, 0x3F, "transmit_controller_flags")?,
+            transmit: ZoneTransmit::from_byte(b[0x0C]),
+            transmit_controllers: ZoneTransmitControllers::from_byte(b[0x0D]),
             reserved: Vec::new(),
         };
         let typed_only = value.to_bytes()?;
@@ -92,13 +185,8 @@ impl Zone {
         b[0x09] = ranged(self.midi_bank_msb, 0x00, 0x7F, "midi_bank_msb")?;
         b[0x0A] = ranged(self.midi_bank_lsb, 0x00, 0x7F, "midi_bank_lsb")?;
         b[0x0B] = ranged(self.midi_program, 0x00, 0x7F, "midi_program")?;
-        b[0x0C] = ranged(self.transmit_flags, 0x00, 0x1F, "transmit_flags")?;
-        b[0x0D] = ranged(
-            self.transmit_controller_flags,
-            0x00,
-            0x3F,
-            "transmit_controller_flags",
-        )?;
+        b[0x0C] = self.transmit.to_byte();
+        b[0x0D] = self.transmit_controllers.to_byte();
         apply_reserved(&mut b, &self.reserved);
         Ok(b)
     }
@@ -130,7 +218,31 @@ mod tests {
         assert!(z.zone_switch);
         assert_eq!(z.midi_pan, 0);
         assert_eq!(z.transpose_octave, 0);
+        // 0x1F = all four named bits + the in-range reserved bit 4.
+        assert!(z.transmit.bank_select);
+        assert!(z.transmit.program_change);
+        assert!(z.transmit.volume);
+        assert!(z.transmit.pan);
+        assert_eq!(z.transmit.reserved_bits, 0x10);
+        // 0x0F = all four named controllers, no reserved bits set.
+        assert!(z.transmit_controllers.pitch_bend);
+        assert!(z.transmit_controllers.modulation);
+        assert!(z.transmit_controllers.foot_pedal_1);
+        assert!(z.transmit_controllers.foot_pedal_2);
+        assert_eq!(z.transmit_controllers.reserved_bits, 0x00);
         assert_eq!(z.to_bytes().unwrap(), bytes);
+    }
+
+    #[test]
+    fn transmit_flags_round_trip_each_bit() {
+        for raw in 0u8..=0xFFu8 {
+            let parsed = ZoneTransmit::from_byte(raw);
+            assert_eq!(parsed.to_byte(), raw);
+        }
+        for raw in 0u8..=0xFFu8 {
+            let parsed = ZoneTransmitControllers::from_byte(raw);
+            assert_eq!(parsed.to_byte(), raw);
+        }
     }
 
     #[test]

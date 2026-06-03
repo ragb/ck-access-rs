@@ -48,4 +48,4 @@ pub use sysex::{
 };
 pub use system::{MasterEq, SystemCommon};
 pub use voices::{category_of, voice_name, Category};
-pub use zone::Zone;
+pub use zone::{Zone, ZoneTransmit, ZoneTransmitControllers};
