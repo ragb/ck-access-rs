@@ -17,6 +17,7 @@
 //! protocol notes and the (still-pending) hardware verification status.
 
 pub mod address;
+pub mod cc;
 pub mod codec;
 pub mod document;
 pub mod inbound;
@@ -33,6 +34,10 @@ pub mod yaml;
 pub mod zone;
 
 pub use address::{AddressSpace, Part as PartSlot};
+pub use cc::{
+    assign_target_name, assignable_targets, cc_info, cc_name, AssignTarget, CcInfo,
+    CONTROL_CHANGES, USB_AUDIO_VOLUME,
+};
 pub use codec::CodecError;
 pub use document::{LiveSet, RawBlock, System};
 pub use inbound::{classify_inbound, InboundMessage};

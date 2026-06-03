@@ -17,6 +17,7 @@ WASM API TO USE (all exported; the .d.ts has full types)
 - Inbound routing: `classifyInbound(bytes)` -> tagged union (`bulk_dump`/`parameter_change`/`request`/`identity_reply`/`unparseable_sysex`/`non_sysex`).
 - Addresses: `systemCommonBase()`, `masterEqBase()`, `liveSetCommonBase()`, `liveSetEqBase()`, `audioTriggerPathBase()`, `zoneBase(0..3)`, `partBase(0..2)`, `bulkHeaderBase()`, `bulkFooterBase()`.
 - Help data: `voiceNames(): string[]` (363 voices) + `categoryName(0..9)` for Part voice pickers; `rotarySpecs()` -> `{ key, label, unit: "rpm"|"ratio"|"", min, max, default }[]` for the Rotary sliders.
+- CC / controller-assign descriptions (use these so the pedal/wheel assign UI shows names, not numbers): `assignTargets() -> { value, name, affects_tone_generator }[]` is the dropdown for `mod_wheel_assign` / `foot_pedal_1_assign` / `foot_pedal_2_assign` (values 0..=119 = that CC, 120 = USB Audio Volume); `assignTargetName(value) -> string` labels a single stored value; `ccName(number) -> string` and `controlChanges() -> { number, name, affects_tone_generator }[]` give the CK's full fixed CC map (e.g. for labelling incoming CCs). `affects_tone_generator: false` marks CCs that are transmitted but don't change the internal sound (Pan/Portamento Time/RPN/NRPN…).
 
 MIDI FLOW (important — the CK is quirky)
 - Read System: `bulkRequest` to `systemCommonBase()` and `masterEqBase()` individually; each returns one Bulk Dump -> decode.

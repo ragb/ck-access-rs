@@ -8,6 +8,7 @@ use ck_core::address::{
     zone_base_address, Part as PartSlot, AUDIO_TRIGGER_PATH_BASE, BULK_FOOTER_BASE,
     BULK_HEADER_BASE, LIVE_SET_COMMON_BASE, LIVE_SET_EQ_BASE, MASTER_EQ_BASE, SYSTEM_COMMON_BASE,
 };
+use ck_core::cc;
 use ck_core::yaml::{
     live_set_from_yaml_str, live_set_to_yaml_string, system_from_yaml_str, system_to_yaml_string,
 };
@@ -288,6 +289,64 @@ pub fn category_name(index: u8) -> Option<String> {
 #[wasm_bindgen(js_name = voiceNames)]
 pub fn voice_names() -> Vec<String> {
     voices::VOICE_NAMES.iter().map(|s| s.to_string()).collect()
+}
+
+// === control change descriptions ===
+
+/// Description of one Control Change number.
+#[derive(Serialize, Tsify)]
+#[tsify(into_wasm_abi)]
+pub struct WasmCcInfo {
+    pub number: u8,
+    pub name: String,
+    pub affects_tone_generator: bool,
+}
+
+/// A controller assign destination (`value` 0..=119 = CC, 120 = USB Audio Volume).
+#[derive(Serialize, Tsify)]
+#[tsify(into_wasm_abi)]
+pub struct WasmAssignTarget {
+    pub value: u8,
+    pub name: String,
+    pub affects_tone_generator: bool,
+}
+
+/// Human label for a Control Change number, or null if undocumented.
+#[wasm_bindgen(js_name = ccName)]
+pub fn cc_name(number: u8) -> Option<String> {
+    cc::cc_name(number).map(str::to_string)
+}
+
+/// The CK's full Control Change table.
+#[wasm_bindgen(js_name = controlChanges)]
+pub fn control_changes() -> Vec<WasmCcInfo> {
+    cc::CONTROL_CHANGES
+        .iter()
+        .map(|c| WasmCcInfo {
+            number: c.number,
+            name: c.name.to_string(),
+            affects_tone_generator: c.affects_tone_generator,
+        })
+        .collect()
+}
+
+/// Label for a controller assign value (0..=120), or null if out of range.
+#[wasm_bindgen(js_name = assignTargetName)]
+pub fn assign_target_name(value: u8) -> Option<String> {
+    cc::assign_target_name(value)
+}
+
+/// All named assign destinations for a Mod-Wheel / Foot-Pedal dropdown.
+#[wasm_bindgen(js_name = assignTargets)]
+pub fn assign_targets() -> Vec<WasmAssignTarget> {
+    cc::assignable_targets()
+        .into_iter()
+        .map(|t| WasmAssignTarget {
+            value: t.value,
+            name: t.name,
+            affects_tone_generator: t.affects_tone_generator,
+        })
+        .collect()
 }
 
 // === address helpers ===
