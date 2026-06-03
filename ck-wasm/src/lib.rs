@@ -291,6 +291,55 @@ pub fn voice_names() -> Vec<String> {
     voices::VOICE_NAMES.iter().map(|s| s.to_string()).collect()
 }
 
+/// One voice: its absolute number (as stored in `Part.category_voices`) + name.
+#[derive(Serialize, Tsify)]
+#[tsify(into_wasm_abi)]
+pub struct WasmVoice {
+    pub number: u16,
+    pub name: String,
+}
+
+/// Inclusive absolute voice-number range `[lo, hi]` owned by category `index`
+/// (0..=9), or empty if out of range. `Part.category_voices[index]` holds a
+/// value in this range.
+#[wasm_bindgen(js_name = categoryVoiceRange)]
+pub fn category_voice_range(index: u8) -> Vec<u16> {
+    match voices::Category::from_index(index) {
+        Some(c) => {
+            let (lo, hi) = c.voice_range();
+            vec![lo, hi]
+        }
+        None => Vec::new(),
+    }
+}
+
+/// Every voice in category `index` (0..=9) as `{ number, name }`, in order.
+/// Use this to populate a Part's voice picker — the `number` is exactly what
+/// goes into `Part.category_voices[index]`.
+#[wasm_bindgen(js_name = voicesInCategory)]
+pub fn voices_in_category(index: u8) -> Vec<WasmVoice> {
+    match voices::Category::from_index(index) {
+        Some(c) => {
+            let (lo, hi) = c.voice_range();
+            (lo..=hi)
+                .filter_map(|n| {
+                    voices::voice_name(n).map(|name| WasmVoice {
+                        number: n,
+                        name: name.to_string(),
+                    })
+                })
+                .collect()
+        }
+        None => Vec::new(),
+    }
+}
+
+/// Category index (0..=9) that owns an absolute voice number, or null.
+#[wasm_bindgen(js_name = categoryOf)]
+pub fn category_of(voice: u16) -> Option<u8> {
+    voices::category_of(voice).map(|c| c.index())
+}
+
 // === control change descriptions ===
 
 /// Description of one Control Change number.

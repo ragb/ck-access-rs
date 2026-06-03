@@ -11,6 +11,9 @@
 //! value `0..=120`: `0..=119` selects the CC of that number, and `120` is the
 //! special **USB Audio Volume** destination. [`assign_target_name`] /
 //! [`assignable_targets`] turn those into labels.
+//!
+//! (CC 10 is Pan, per the manual. The per-part pan added in v1.10 is a stored
+//! setting — [`crate::part::Part::pan`] — not a Control Change.)
 
 /// Description of one Control Change number on the CK.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
