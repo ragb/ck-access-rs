@@ -96,6 +96,11 @@ this sequence and the typed document; blocks this crate doesn't model
   numbers, Tempo). Tempo is stored ×10 (`1200` = 120.0 BPM).
 - **16-bit nibble-packed** (`Size 4`) — Master Tune; four bytes, one nibble each.
 - **ASCII** — Live Set name (15 bytes), Audio Trigger file path (255 bytes).
+- **effect type** — Part `effect_1/2_type` (`0x00..=0x23`) and A/D `ad_effect_1/2_type`
+  (`0x00..=0x22`) are raw indices into the effect-algorithm catalog
+  ([`crate::effects`](../ck-core/src/effects.rs)); names come from the *Owner's
+  Manual* "Data List" effect-type footnotes (`*2` Part, `*1` A/D). Manually
+  transcribed, not yet device-verified.
 
 Engineering-unit fields whose exact conversion isn't device-confirmed (dB / Hz /
 effect-type indices) are kept as **documented raw bytes** so the codec

@@ -9,6 +9,7 @@ use ck_core::address::{
     BULK_HEADER_BASE, LIVE_SET_COMMON_BASE, LIVE_SET_EQ_BASE, MASTER_EQ_BASE, SYSTEM_COMMON_BASE,
 };
 use ck_core::cc;
+use ck_core::effects;
 use ck_core::yaml::{
     live_set_from_yaml_str, live_set_to_yaml_string, system_from_yaml_str, system_to_yaml_string,
 };
@@ -396,6 +397,49 @@ pub fn assign_targets() -> Vec<WasmAssignTarget> {
             affects_tone_generator: t.affects_tone_generator,
         })
         .collect()
+}
+
+// === effect type catalog ===
+
+/// Description of one effect algorithm (`number` is the stored type byte).
+#[derive(Serialize, Tsify)]
+#[tsify(into_wasm_abi)]
+pub struct WasmEffectInfo {
+    pub number: u8,
+    pub name: String,
+}
+
+fn map_effects(list: &[effects::EffectInfo]) -> Vec<WasmEffectInfo> {
+    list.iter()
+        .map(|e| WasmEffectInfo {
+            number: e.number,
+            name: e.name.to_string(),
+        })
+        .collect()
+}
+
+/// Part insert-effect algorithms (`Part.effect_1_type` / `effect_2_type`).
+#[wasm_bindgen(js_name = partEffects)]
+pub fn part_effects() -> Vec<WasmEffectInfo> {
+    map_effects(effects::PART_EFFECTS)
+}
+
+/// Name of a Part insert-effect type, or null if out of range.
+#[wasm_bindgen(js_name = partEffectName)]
+pub fn part_effect_name_js(number: u8) -> Option<String> {
+    effects::part_effect_name(number).map(str::to_string)
+}
+
+/// A/D-input effect algorithms (`LiveSetCommon.ad_effect_1_type` / `ad_effect_2_type`).
+#[wasm_bindgen(js_name = adEffects)]
+pub fn ad_effects() -> Vec<WasmEffectInfo> {
+    map_effects(effects::AD_EFFECTS)
+}
+
+/// Name of an A/D-input effect type, or null if out of range.
+#[wasm_bindgen(js_name = adEffectName)]
+pub fn ad_effect_name_js(number: u8) -> Option<String> {
+    effects::ad_effect_name(number).map(str::to_string)
 }
 
 // === address helpers ===

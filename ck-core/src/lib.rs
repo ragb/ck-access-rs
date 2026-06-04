@@ -20,6 +20,7 @@ pub mod address;
 pub mod cc;
 pub mod codec;
 pub mod document;
+pub mod effects;
 pub mod inbound;
 pub mod live_set;
 pub mod live_set_select;
@@ -40,6 +41,7 @@ pub use cc::{
 };
 pub use codec::CodecError;
 pub use document::{LiveSet, RawBlock, System};
+pub use effects::{ad_effect_name, part_effect_name, EffectInfo, AD_EFFECTS, PART_EFFECTS};
 pub use inbound::{classify_inbound, InboundMessage};
 pub use live_set::{LiveSetCommon, LiveSetEq};
 pub use live_set_select::{
