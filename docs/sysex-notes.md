@@ -96,6 +96,14 @@ this sequence and the typed document; blocks this crate doesn't model
   numbers, Tempo). Tempo is stored ×10 (`1200` = 120.0 BPM).
 - **16-bit nibble-packed** (`Size 4`) — Master Tune; four bytes, one nibble each.
 - **ASCII** — Live Set name (15 bytes), Audio Trigger file path (255 bytes).
+- **EQ frequency** — every EQ band's frequency (`MasterEq`/`LiveSetEq` low/mid/high,
+  and the A/D-input EQ) is a raw index into one shared 1/6-octave frequency table
+  ([`crate::eq`](../ck-core/src/eq.rs)). The manual documents only the per-band
+  endpoints (Low 32 Hz–2.0 kHz, Mid 100 Hz–10 kHz, High 500 Hz–16 kHz); those six
+  land exactly on the standard Yamaha/R20 1/6-octave series, which anchors the
+  full table. Endpoints manual-confirmed; intermediate labels are the standard
+  series, not individually device-verified. (Gains are `−12..=+12 dB`, already
+  typed as `i8`.)
 - **effect type** — Part `effect_1/2_type` (`0x00..=0x23`) and A/D `ad_effect_1/2_type`
   (`0x00..=0x22`) are raw indices into the effect-algorithm catalog
   ([`crate::effects`](../ck-core/src/effects.rs)); names come from the *Owner's

@@ -10,6 +10,7 @@ use ck_core::address::{
 };
 use ck_core::cc;
 use ck_core::effects;
+use ck_core::eq;
 use ck_core::yaml::{
     live_set_from_yaml_str, live_set_to_yaml_string, system_from_yaml_str, system_to_yaml_string,
 };
@@ -440,6 +441,67 @@ pub fn ad_effects() -> Vec<WasmEffectInfo> {
 #[wasm_bindgen(js_name = adEffectName)]
 pub fn ad_effect_name_js(number: u8) -> Option<String> {
     effects::ad_effect_name(number).map(str::to_string)
+}
+
+// === EQ frequency catalog ===
+
+/// One EQ frequency step: stored index, centre frequency, and panel label.
+#[derive(Serialize, Tsify)]
+#[tsify(into_wasm_abi)]
+pub struct WasmEqFreq {
+    pub index: u8,
+    pub hz: u32,
+    pub label: String,
+}
+
+fn map_eq(list: &[eq::EqFreq]) -> Vec<WasmEqFreq> {
+    list.iter()
+        .map(|f| WasmEqFreq {
+            index: f.index,
+            hz: f.hz,
+            label: f.label.to_string(),
+        })
+        .collect()
+}
+
+/// The full shared EQ frequency table (index `0x00..=0x3A`).
+#[wasm_bindgen(js_name = eqFrequencies)]
+pub fn eq_frequencies() -> Vec<WasmEqFreq> {
+    map_eq(eq::EQ_FREQUENCIES)
+}
+
+/// Panel label for an EQ frequency index, or null if out of range.
+#[wasm_bindgen(js_name = eqFreqLabel)]
+pub fn eq_freq_label(index: u8) -> Option<String> {
+    eq::eq_freq_label(index).map(str::to_string)
+}
+
+/// Centre frequency (Hz) for an EQ frequency index, or null if out of range.
+#[wasm_bindgen(js_name = eqFreqHz)]
+pub fn eq_freq_hz(index: u8) -> Option<u32> {
+    eq::eq_freq_hz(index)
+}
+
+/// Inclusive `[lo, hi]` index range for an EQ band (0 = Low, 1 = Mid, 2 = High).
+#[wasm_bindgen(js_name = eqBandRange)]
+pub fn eq_band_range(band: u8) -> Vec<u8> {
+    match eq::EqBand::from_index(band) {
+        Some(b) => {
+            let (lo, hi) = b.index_range();
+            vec![lo, hi]
+        }
+        None => Vec::new(),
+    }
+}
+
+/// The selectable frequency steps for an EQ band's picker
+/// (0 = Low, 1 = Mid, 2 = High).
+#[wasm_bindgen(js_name = eqBandFrequencies)]
+pub fn eq_band_frequencies(band: u8) -> Vec<WasmEqFreq> {
+    match eq::EqBand::from_index(band) {
+        Some(b) => map_eq(eq::eq_band_frequencies(b)),
+        None => Vec::new(),
+    }
 }
 
 // === address helpers ===
