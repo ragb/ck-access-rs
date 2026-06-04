@@ -51,7 +51,10 @@ pub use live_set_select::{
     TOTAL_LIVE_SETS,
 };
 pub use part::Part;
-pub use rotary::{RotaryParamSpec, RotarySpeaker, StereoMono, ROTARY_SPECS};
+pub use rotary::{
+    balance_label as rotary_balance_label, RotaryParamSpec, RotarySpeaker, StereoMono,
+    BALANCE_CENTER as ROTARY_BALANCE_CENTER, ROTARY_SPECS,
+};
 pub use sysex::{
     checksum, identify_reply, identity_request, CkModel, Message, SysExError, MODEL_ID, YAMAHA_ID,
 };

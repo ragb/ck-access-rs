@@ -25,11 +25,31 @@ byte_enum! {
     valid = "0=stereo, 1=mono"
 }
 
+/// Centre balance byte: horn (treble) = rotor (bass).
+pub const BALANCE_CENTER: u8 = 0x40;
+
+/// Human label for a Rotary **Balance** byte, matching the panel notation
+/// `R63>H – R=H – R<H63` (R = rotor/bass, H = horn/treble). Centre `0x40` is
+/// `"R=H"`; bytes above centre tilt toward the horn (`"R<H{n}"`), below toward
+/// the rotor (`"R{n}>H"`). Device-confirmed by the documented defaults
+/// (`0x46` → `"R<H6"`, `0x50` → `"R<H16"`).
+pub fn balance_label(byte: u8) -> String {
+    let d = byte as i32 - BALANCE_CENTER as i32;
+    match d.cmp(&0) {
+        std::cmp::Ordering::Equal => "R=H".to_string(),
+        std::cmp::Ordering::Greater => format!("R<H{d}"),
+        std::cmp::Ordering::Less => format!("R{}>H", -d),
+    }
+}
+
 /// The Rotary Speaker block (Rotary A + Rotary B).
 ///
-/// Speed values are RPM rendered to a 0..=127 index by the device; Balance and
-/// Acceleration/Transition are likewise stored as raw 0..=127 indices, kept raw
-/// here because their engineering-unit mapping isn't a simple formula.
+/// Balance is a centred value (`0x40` = R=H — see [`balance_label`]); Stereo/Mono
+/// is typed. Speed / Acceleration / Transition stay raw `0..=127` indices: the
+/// manual documents only their rpm/ratio range + default (exposed via
+/// [`ROTARY_SPECS`]), and the device's per-step curve isn't published or
+/// derivable (Rotary A and B use different byte→rpm mappings), so no per-byte
+/// conversion is provided. Transition is itself a raw `0..=127` value.
 #[cfg_attr(feature = "tsify", derive(tsify_next::Tsify))]
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -299,6 +319,15 @@ mod tests {
             .unwrap();
         assert_eq!(horn.unit, "rpm");
         assert_eq!(horn.default, 45.4);
+    }
+
+    #[test]
+    fn balance_labels_match_documented_defaults() {
+        assert_eq!(balance_label(0x40), "R=H");
+        assert_eq!(balance_label(0x46), "R<H6"); // Rotary A default
+        assert_eq!(balance_label(0x50), "R<H16"); // Rotary B default
+        assert_eq!(balance_label(0x01), "R63>H"); // extreme toward rotor
+        assert_eq!(balance_label(0x7F), "R<H63"); // extreme toward horn
     }
 
     #[test]

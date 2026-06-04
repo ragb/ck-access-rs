@@ -95,6 +95,12 @@ pub struct WasmRotarySpec {
     pub default: f32,
 }
 
+/// Panel label for a Rotary Balance byte (e.g. `0x40` -> "R=H", `0x46` -> "R<H6").
+#[wasm_bindgen(js_name = rotaryBalanceLabel)]
+pub fn rotary_balance_label(byte: u8) -> String {
+    ck_core::rotary::balance_label(byte)
+}
+
 #[wasm_bindgen(js_name = rotarySpecs)]
 pub fn rotary_specs() -> Vec<WasmRotarySpec> {
     ROTARY_SPECS
