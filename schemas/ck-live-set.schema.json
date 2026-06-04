@@ -836,7 +836,7 @@
       ]
     },
     "RotarySpeaker": {
-      "description": "The Rotary Speaker block (Rotary A + Rotary B).\n\nSpeed values are RPM rendered to a 0..=127 index by the device; Balance and Acceleration/Transition are likewise stored as raw 0..=127 indices, kept raw here because their engineering-unit mapping isn't a simple formula.",
+      "description": "The Rotary Speaker block (Rotary A + Rotary B).\n\nBalance is a centred value (`0x40` = R=H — see [`balance_label`]); Stereo/Mono is typed. Speed / Acceleration / Transition stay raw `0..=127` indices: the manual documents only their rpm/ratio range + default (exposed via [`ROTARY_SPECS`]), and the device's per-step curve isn't published or derivable (Rotary A and B use different byte→rpm mappings), so no per-byte conversion is provided. Transition is itself a raw `0..=127` value.",
       "type": "object",
       "required": [
         "a_balance",

@@ -25,6 +25,7 @@ pub mod eq;
 pub mod inbound;
 pub mod live_set;
 pub mod live_set_select;
+pub mod params;
 pub mod part;
 pub mod rotary;
 #[cfg(feature = "schema")]
@@ -50,6 +51,7 @@ pub use live_set_select::{
     select_live_set_messages, SelectError, LIVE_SET_BANK_MSB, PAGES, SOUNDS_PER_PAGE,
     TOTAL_LIVE_SETS,
 };
+pub use params::{field_help, field_meta, params_in_group, ParamMeta, PARAMS};
 pub use part::Part;
 pub use rotary::{
     balance_label as rotary_balance_label, RotaryParamSpec, RotarySpeaker, StereoMono,

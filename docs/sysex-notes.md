@@ -110,6 +110,11 @@ this sequence and the typed document; blocks this crate doesn't model
   Manual* "Data List" effect-type footnotes (`*2` Part, `*1` A/D). Manually
   transcribed, not yet device-verified.
 
+Field help lives in [`crate::params`](../ck-core/src/params.rs): a runtime
+`ParamMeta` catalog (label / group / help / level) keyed by serde path
+(`system.common.master_tune`, `live_set.part.filter_cutoff`, …), so the editor's
+`?` buttons read help from the codec instead of a hand-written TS table.
+
 Engineering-unit fields whose exact conversion isn't device-confirmed (dB / Hz /
 effect-type indices) are kept as **documented raw bytes** so the codec
 round-trips exactly; the typed enums cover only the unambiguous cases.

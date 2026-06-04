@@ -11,6 +11,7 @@ use ck_core::address::{
 use ck_core::cc;
 use ck_core::effects;
 use ck_core::eq;
+use ck_core::params;
 use ck_core::yaml::{
     live_set_from_yaml_str, live_set_to_yaml_string, system_from_yaml_str, system_to_yaml_string,
 };
@@ -508,6 +509,50 @@ pub fn eq_band_frequencies(band: u8) -> Vec<WasmEqFreq> {
         Some(b) => map_eq(eq::eq_band_frequencies(b)),
         None => Vec::new(),
     }
+}
+
+// === field metadata / help ===
+
+/// Editor-facing metadata for one field (label / group / help / level).
+#[derive(Serialize, Tsify)]
+#[tsify(into_wasm_abi)]
+pub struct WasmParamMeta {
+    pub path: String,
+    pub label: String,
+    pub group: String,
+    pub help: String,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub level: bool,
+}
+
+impl From<&params::ParamMeta> for WasmParamMeta {
+    fn from(m: &params::ParamMeta) -> Self {
+        WasmParamMeta {
+            path: m.path.to_string(),
+            label: m.label.to_string(),
+            group: m.group.to_string(),
+            help: m.help.to_string(),
+            level: m.level,
+        }
+    }
+}
+
+/// Help text for a field path (e.g. `"live_set.part.filter_cutoff"`), or null.
+#[wasm_bindgen(js_name = fieldHelp)]
+pub fn field_help_js(path: &str) -> Option<String> {
+    params::field_help(path).map(str::to_string)
+}
+
+/// Full metadata for a field path, or null if the path isn't in the catalog.
+#[wasm_bindgen(js_name = fieldMeta)]
+pub fn field_meta_js(path: &str) -> Option<WasmParamMeta> {
+    params::field_meta(path).map(WasmParamMeta::from)
+}
+
+/// The entire field-metadata catalog.
+#[wasm_bindgen(js_name = paramCatalog)]
+pub fn param_catalog() -> Vec<WasmParamMeta> {
+    params::PARAMS.iter().map(WasmParamMeta::from).collect()
 }
 
 // === address helpers ===
