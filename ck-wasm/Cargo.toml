@@ -2,7 +2,9 @@
 name = "ck-wasm"
 version.workspace = true
 edition.workspace = true
-license.workspace = true
+# Explicit (not `license.workspace`) because wasm-pack's manifest parser rejects
+# workspace-inherited license fields ("invalid type: map, expected a string").
+license = "MIT"
 repository.workspace = true
 description = "WASM + TypeScript bindings for ck-core."
 
