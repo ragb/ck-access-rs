@@ -30,7 +30,8 @@ use crate::zone::Zone;
 #[cfg_attr(feature = "tsify", derive(tsify_next::Tsify))]
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, deny_unknown_fields)]
 pub struct System {
     pub common: SystemCommon,
     pub master_eq: MasterEq,
@@ -55,6 +56,7 @@ pub struct RawBlock {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, deny_unknown_fields)]
 pub struct LiveSet {
     pub common: LiveSetCommon,
     pub eq: LiveSetEq,
@@ -73,6 +75,40 @@ pub struct LiveSet {
     /// (Soundmondo format version, other firmware-specific blocks), kept verbatim.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub extra_blocks: Vec<RawBlock>,
+}
+
+impl Default for LiveSet {
+    /// A complete, valid factory-style baseline: default Common/EQ/Rotary, four
+    /// Zones (Zone 1 enabled, ascending transmit channels) and three Parts
+    /// (Part A enabled+selected; per-slot colours). Edit-then-merge over this to
+    /// build a preset without specifying every field.
+    fn default() -> Self {
+        let zones = (0..Self::ZONES as u8)
+            .map(|i| Zone {
+                zone_switch: i == 0,
+                transmit_channel: i,
+                ..Zone::default()
+            })
+            .collect();
+        let colors = [0x02u8, 0x08, 0x04];
+        let parts = (0..Self::PARTS)
+            .map(|i| Part {
+                part_switch: i == 0,
+                part_selected: i == 0,
+                part_color: colors[i],
+                ..Part::default()
+            })
+            .collect();
+        Self {
+            common: LiveSetCommon::default(),
+            eq: LiveSetEq::default(),
+            audio_trigger_path: String::new(),
+            zones,
+            parts,
+            rotary: Some(RotarySpeaker::default()),
+            extra_blocks: Vec::new(),
+        }
+    }
 }
 
 impl LiveSet {
@@ -171,5 +207,51 @@ impl LiveSet {
         }
         out.sort_by_key(|(a, _)| *a);
         Ok(out)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn system_default_is_byte_encodable() {
+        let s = System::default();
+        s.common.to_bytes().unwrap();
+        s.master_eq.to_bytes().unwrap();
+    }
+
+    #[test]
+    fn live_set_default_is_complete_and_encodable() {
+        let ls = LiveSet::default();
+        assert_eq!(ls.zones.len(), LiveSet::ZONES);
+        assert_eq!(ls.parts.len(), LiveSet::PARTS);
+        assert!(ls.zones[0].zone_switch); // Zone 1 on
+        assert!(!ls.zones[1].zone_switch);
+        assert_eq!(ls.zones[2].transmit_channel, 2);
+        assert!(ls.parts[0].part_switch); // Part A on
+        assert_eq!(ls.parts[1].part_color, 0x08);
+        ls.to_blocks().unwrap(); // every block encodes
+    }
+
+    #[test]
+    fn partial_yaml_merges_over_defaults() {
+        // Sparse Live Set: only a name and one part's cutoff; the rest fills
+        // from the factory default.
+        let yaml = "common:\n  name: My Patch\nparts:\n- filter_cutoff: 100\n- {}\n- {}\nzones: [{}, {}, {}, {}]\n";
+        let ls: LiveSet = serde_yaml::from_str(yaml).unwrap();
+        assert_eq!(ls.common.name, "My Patch");
+        assert_eq!(ls.common.reverb_depth, 0x14); // from default
+        assert_eq!(ls.parts[0].filter_cutoff, 100); // overridden
+        assert_eq!(ls.parts[0].filter_resonance, 0x40); // from default
+        assert!(ls.parts[0].filter_switch); // from default
+        ls.to_blocks().unwrap();
+    }
+
+    #[test]
+    fn partial_system_yaml_merges() {
+        let s: System = serde_yaml::from_str("common:\n  master_tune: 1024\n").unwrap();
+        assert!(s.common.local_control); // default true, not bool::default false
+        assert_eq!(s.common.output_gain, 0x3E);
     }
 }

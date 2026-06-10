@@ -71,6 +71,7 @@ byte_enum! {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct SystemCommon {
     /// Master Tune, raw 16-bit value (`414.72–466.78 Hz`; default `0x0400`).
     #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 65535)))]
@@ -166,6 +167,54 @@ pub struct SystemCommon {
     /// Reserved/undocumented bytes captured verbatim so writes round-trip exactly.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub reserved: Vec<RawByte>,
+}
+
+impl Default for SystemCommon {
+    /// Factory defaults from the Owner's Manual "Default (HEX)" column.
+    fn default() -> Self {
+        Self {
+            master_tune: 0x0400,
+            keyboard_octave_shift: 0,
+            keyboard_transpose: 0,
+            controller_reset: ControllerReset::Reset,
+            local_control: true,
+            tx_channel: 0,
+            rx_channel: 0,
+            midi_control: false,
+            output_gain: 0x3E,
+            touch_curve: TouchCurve::Normal,
+            fixed_velocity: 0x40,
+            tx_rx_bank_select: true,
+            tx_rx_program_change: true,
+            midi_in_out: true,
+            usb_in_out: true,
+            value_indication: true,
+            controller_mode: ControllerMode::Jump,
+            lcd_switch: true,
+            lcd_contrast: 0,
+            panel_lock_live_set: true,
+            panel_lock_organ: true,
+            panel_lock_filter_eg: true,
+            panel_lock_drive_effect: true,
+            panel_lock_delay_reverb: true,
+            panel_lock_equalizer: true,
+            power_on_page: 0,
+            power_on_sound: 0,
+            foot_pedal_1_type: FootPedalType::Fc3aHalfOn,
+            foot_pedal_1_live_set: FootPedalLiveSet::Off,
+            foot_pedal_2_type: FootPedalType::Fc7,
+            foot_pedal_2_live_set: FootPedalLiveSet::Off,
+            filter_eg_reset: true,
+            effect_on_off_reset: true,
+            usb_audio_volume: 0x40,
+            bluetooth_volume: 0x40,
+            ad_volume: 0x01,
+            usb_audio_loopback: false,
+            speaker_mode: SpeakerMode::Normal,
+            speaker_mute: SpeakerMute::Auto,
+            reserved: Vec::new(),
+        }
+    }
 }
 
 impl SystemCommon {
@@ -280,6 +329,7 @@ impl SystemCommon {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct MasterEq {
     /// Low gain, −12..=+12 dB.
     #[cfg_attr(feature = "schema", schemars(range(min = -12, max = 12)))]
@@ -302,6 +352,21 @@ pub struct MasterEq {
     /// Reserved/undocumented bytes captured verbatim so writes round-trip exactly.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub reserved: Vec<RawByte>,
+}
+
+impl Default for MasterEq {
+    /// Factory defaults: flat gains, default band centres.
+    fn default() -> Self {
+        Self {
+            low_gain: 0,
+            low_freq: 0x0C,
+            mid_gain: 0,
+            mid_freq: 0x22,
+            high_gain: 0,
+            high_freq: 0x30,
+            reserved: Vec::new(),
+        }
+    }
 }
 
 impl MasterEq {

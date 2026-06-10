@@ -52,6 +52,7 @@ byte_enum! {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct LiveSetCommon {
     /// Live Set name, up to 15 ASCII characters.
     pub name: String,
@@ -180,6 +181,61 @@ pub struct LiveSetCommon {
     /// Reserved/undocumented bytes captured verbatim so writes round-trip exactly.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub reserved: Vec<RawByte>,
+}
+
+impl Default for LiveSetCommon {
+    /// Factory defaults from the Owner's Manual "Default (HEX)" column.
+    fn default() -> Self {
+        Self {
+            name: "Init".to_string(),
+            live_set_eq_mode: false,
+            master_keyboard_mode: false,
+            advanced_zone: false,
+            tempo_x10: 1200,
+            sound_transpose: 0,
+            layer_split_mode: 0,
+            split_point: 0x37,
+            split_point_a_b: 0x37,
+            split_point_b_c: 0x4F,
+            mod_wheel_assign: 1,
+            foot_pedal_1_assign: 0x40,
+            foot_pedal_1_limit_low: 0,
+            foot_pedal_1_limit_high: 0x7F,
+            foot_pedal_2_assign: 0x0B,
+            foot_pedal_2_limit_low: 0,
+            foot_pedal_2_limit_high: 0x7F,
+            delay_switch: false,
+            delay_type: DelayType::Digital,
+            delay_depth: 0x40,
+            delay_time: 0x40,
+            delay_tempo_time: 0x0B,
+            reverb_switch: true,
+            reverb_type: ReverbType::Hall,
+            reverb_depth: 0x14,
+            rotary_speed: RotarySpeed::Slow,
+            rotary_stop: false,
+            audio_trigger_switch: false,
+            audio_trigger_volume: 0x40,
+            audio_trigger_key: AudioTriggerKey::Highest,
+            audio_trigger_play_mode: AudioTriggerPlayMode::OneShot,
+            ad_eq_low_freq: 0x12,
+            ad_eq_low_gain: 0,
+            ad_eq_mid_freq: 0x29,
+            ad_eq_mid_gain: 0,
+            ad_eq_high_freq: 0x34,
+            ad_eq_high_gain: 0,
+            ad_noise_gate_switch: false,
+            ad_noise_gate_threshold: 0x52,
+            ad_effect_1_type: 0,
+            ad_effect_1_depth: 0x40,
+            ad_effect_1_rate: 0x40,
+            ad_effect_2_type: 0,
+            ad_effect_2_depth: 0x40,
+            ad_effect_2_rate: 0x40,
+            ad_volume: 0x7F,
+            reserved: Vec::new(),
+        }
+    }
 }
 
 impl LiveSetCommon {
@@ -334,6 +390,7 @@ impl LiveSetCommon {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct LiveSetEq {
     /// Low gain, −12..=+12 dB.
     #[cfg_attr(feature = "schema", schemars(range(min = -12, max = 12)))]
@@ -356,6 +413,21 @@ pub struct LiveSetEq {
     /// Reserved/undocumented bytes captured verbatim so writes round-trip exactly.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub reserved: Vec<RawByte>,
+}
+
+impl Default for LiveSetEq {
+    /// Factory defaults: flat gains, default band centres.
+    fn default() -> Self {
+        Self {
+            low_gain: 0,
+            low_freq: 0x0C,
+            mid_gain: 0,
+            mid_freq: 0x22,
+            high_gain: 0,
+            high_freq: 0x30,
+            reserved: Vec::new(),
+        }
+    }
 }
 
 impl LiveSetEq {

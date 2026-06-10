@@ -27,6 +27,7 @@ fn u8_is_zero(v: &u8) -> bool {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct ZoneTransmit {
     /// Bit 0: transmit Bank Select MSB+LSB.
     pub bank_select: bool,
@@ -72,6 +73,7 @@ impl ZoneTransmit {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct ZoneTransmitControllers {
     /// Bit 0: transmit Pitch Bend.
     pub pitch_bend: bool,
@@ -112,6 +114,7 @@ impl ZoneTransmitControllers {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Zone {
     /// Enables this Zone's MIDI transmission.
     pub zone_switch: bool,
@@ -152,6 +155,41 @@ pub struct Zone {
     /// Reserved/undocumented bytes captured verbatim so writes round-trip exactly.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub reserved: Vec<RawByte>,
+}
+
+impl Default for Zone {
+    /// A neutral Zone: off, channel 1, full range. (`LiveSet::default` enables
+    /// Zone 1 and assigns ascending channels.)
+    fn default() -> Self {
+        Self {
+            zone_switch: false,
+            transmit_channel: 0,
+            transpose_octave: 0,
+            transpose_semitone: 0,
+            note_limit_low: 0,
+            note_limit_high: 0x7F,
+            midi_volume: 0x7F,
+            midi_pan: 0,
+            midi_bank_msb: 0,
+            midi_bank_lsb: 0,
+            midi_program: 0,
+            transmit: ZoneTransmit {
+                bank_select: true,
+                program_change: true,
+                volume: true,
+                pan: true,
+                reserved_bits: 0x10,
+            },
+            transmit_controllers: ZoneTransmitControllers {
+                pitch_bend: true,
+                modulation: true,
+                foot_pedal_1: true,
+                foot_pedal_2: true,
+                reserved_bits: 0,
+            },
+            reserved: Vec::new(),
+        }
+    }
 }
 
 impl Zone {

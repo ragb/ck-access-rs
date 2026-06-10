@@ -87,6 +87,7 @@ byte_enum! {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Part {
     /// Active category, 0..=9 (indexes `category_voices`).
     #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 9)))]
@@ -225,6 +226,69 @@ pub struct Part {
     /// Reserved/undocumented bytes captured verbatim so writes round-trip exactly.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub reserved: Vec<RawByte>,
+}
+
+impl Default for Part {
+    /// Factory defaults from the Owner's Manual "Default (HEX)" column (Part A
+    /// flavour: colour 2). `LiveSet::default` adjusts colour/switch per slot.
+    fn default() -> Self {
+        Self {
+            current_category: 0,
+            category_voices: vec![0; CATEGORY_COUNT],
+            note_shift: 0,
+            part_volume: 0x7F,
+            part_color: 0x02,
+            part_switch: false,
+            part_selected: false,
+            effect_select: EffectSelect::Effect1,
+            pan: 0,
+            mono_poly: MonoPoly::Poly,
+            mono_type: MonoType::Normal,
+            portamento_time: 0x14,
+            portamento_mode: PortamentoMode::Rate,
+            unison_switch: false,
+            unison_type: UnisonType::MultiLayer,
+            unison_volume: 0x7F,
+            unison_detune: 0x40,
+            pitch_bend_range: 2,
+            pitch_modulation_depth: 0x0A,
+            amplifier_modulation_depth: 0,
+            filter_modulation_depth: 0,
+            modulation_speed: 0,
+            receive_expression: true,
+            receive_sustain: true,
+            receive_sostenuto: true,
+            receive_soft: true,
+            external_keyboard: ExternalKeyboard::ExtInt,
+            touch_sensitivity_depth: 0x40,
+            touch_sensitivity_offset: 0x40,
+            drawbars: vec![0x7F, 0x7F, 0x7F, 0, 0, 0, 0, 0, 0],
+            percussion_switch: false,
+            percussion_type: PercussionType::Third,
+            percussion_decay: PercussionDecay::Slow,
+            percussion_volume: PercussionVolume::Normal,
+            vibrato_chorus_switch: false,
+            vibrato_chorus_type: VibratoChorusType::C3,
+            filter_switch: true,
+            filter_cutoff: 0x40,
+            filter_resonance: 0x40,
+            eg_switch: true,
+            eg_attack: 0x40,
+            eg_release: 0x40,
+            drive_switch: false,
+            drive_type: DriveType::OverDrive,
+            drive_depth: 0x40,
+            effect_1_switch: false,
+            effect_1_type: 0,
+            effect_1_depth: 0x40,
+            effect_1_rate: 0x40,
+            effect_2_switch: false,
+            effect_2_type: 0,
+            effect_2_depth: 0x40,
+            effect_2_rate: 0x40,
+            reserved: Vec::new(),
+        }
+    }
 }
 
 impl Part {

@@ -3,18 +3,72 @@
   "title": "System",
   "description": "The global System settings: Common block + Master EQ.",
   "type": "object",
-  "required": [
-    "common",
-    "master_eq"
-  ],
   "properties": {
     "common": {
-      "$ref": "#/definitions/SystemCommon"
+      "default": {
+        "ad_volume": 1,
+        "bluetooth_volume": 64,
+        "controller_mode": "jump",
+        "controller_reset": "reset",
+        "effect_on_off_reset": true,
+        "filter_eg_reset": true,
+        "fixed_velocity": 64,
+        "foot_pedal_1_live_set": "off",
+        "foot_pedal_1_type": "fc3a_half_on",
+        "foot_pedal_2_live_set": "off",
+        "foot_pedal_2_type": "fc7",
+        "keyboard_octave_shift": 0,
+        "keyboard_transpose": 0,
+        "lcd_contrast": 0,
+        "lcd_switch": true,
+        "local_control": true,
+        "master_tune": 1024,
+        "midi_control": false,
+        "midi_in_out": true,
+        "output_gain": 62,
+        "panel_lock_delay_reverb": true,
+        "panel_lock_drive_effect": true,
+        "panel_lock_equalizer": true,
+        "panel_lock_filter_eg": true,
+        "panel_lock_live_set": true,
+        "panel_lock_organ": true,
+        "power_on_page": 0,
+        "power_on_sound": 0,
+        "rx_channel": 0,
+        "speaker_mode": "normal",
+        "speaker_mute": "auto",
+        "touch_curve": "normal",
+        "tx_channel": 0,
+        "tx_rx_bank_select": true,
+        "tx_rx_program_change": true,
+        "usb_audio_loopback": false,
+        "usb_audio_volume": 64,
+        "usb_in_out": true,
+        "value_indication": true
+      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/SystemCommon"
+        }
+      ]
     },
     "master_eq": {
-      "$ref": "#/definitions/MasterEq"
+      "default": {
+        "high_freq": 48,
+        "high_gain": 0,
+        "low_freq": 12,
+        "low_gain": 0,
+        "mid_freq": 34,
+        "mid_gain": 0
+      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/MasterEq"
+        }
+      ]
     }
   },
+  "additionalProperties": false,
   "definitions": {
     "ControllerMode": {
       "description": "Knob pickup behaviour (offset 0x1C).",
@@ -54,17 +108,10 @@
     "MasterEq": {
       "description": "The System **Master EQ** block — a 3-band EQ.",
       "type": "object",
-      "required": [
-        "high_freq",
-        "high_gain",
-        "low_freq",
-        "low_gain",
-        "mid_freq",
-        "mid_gain"
-      ],
       "properties": {
         "high_freq": {
           "description": "High frequency, raw `0x1C..=0x3A` (500 Hz – 16 kHz).",
+          "default": 48,
           "type": "integer",
           "format": "uint8",
           "maximum": 58.0,
@@ -72,6 +119,7 @@
         },
         "high_gain": {
           "description": "High gain, −12..=+12 dB.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 12.0,
@@ -79,6 +127,7 @@
         },
         "low_freq": {
           "description": "Low frequency, raw `0x04..=0x28` (32 Hz – 2.0 kHz).",
+          "default": 12,
           "type": "integer",
           "format": "uint8",
           "maximum": 40.0,
@@ -86,6 +135,7 @@
         },
         "low_gain": {
           "description": "Low gain, −12..=+12 dB.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 12.0,
@@ -93,6 +143,7 @@
         },
         "mid_freq": {
           "description": "Mid frequency, raw `0x0E..=0x36` (100 Hz – 10 kHz).",
+          "default": 34,
           "type": "integer",
           "format": "uint8",
           "maximum": 54.0,
@@ -100,6 +151,7 @@
         },
         "mid_gain": {
           "description": "Mid gain, −12..=+12 dB.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 12.0,
@@ -153,50 +205,10 @@
     "SystemCommon": {
       "description": "The System **Common** block.",
       "type": "object",
-      "required": [
-        "ad_volume",
-        "bluetooth_volume",
-        "controller_mode",
-        "controller_reset",
-        "effect_on_off_reset",
-        "filter_eg_reset",
-        "fixed_velocity",
-        "foot_pedal_1_live_set",
-        "foot_pedal_1_type",
-        "foot_pedal_2_live_set",
-        "foot_pedal_2_type",
-        "keyboard_octave_shift",
-        "keyboard_transpose",
-        "lcd_contrast",
-        "lcd_switch",
-        "local_control",
-        "master_tune",
-        "midi_control",
-        "midi_in_out",
-        "output_gain",
-        "panel_lock_delay_reverb",
-        "panel_lock_drive_effect",
-        "panel_lock_equalizer",
-        "panel_lock_filter_eg",
-        "panel_lock_live_set",
-        "panel_lock_organ",
-        "power_on_page",
-        "power_on_sound",
-        "rx_channel",
-        "speaker_mode",
-        "speaker_mute",
-        "touch_curve",
-        "tx_channel",
-        "tx_rx_bank_select",
-        "tx_rx_program_change",
-        "usb_audio_loopback",
-        "usb_audio_volume",
-        "usb_in_out",
-        "value_indication"
-      ],
       "properties": {
         "ad_volume": {
           "description": "A/D input volume, 0..=127.",
+          "default": 1,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -204,6 +216,7 @@
         },
         "bluetooth_volume": {
           "description": "Bluetooth volume, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -211,6 +224,7 @@
         },
         "controller_mode": {
           "description": "Knob pickup behaviour when the physical position differs from the stored value.",
+          "default": "jump",
           "allOf": [
             {
               "$ref": "#/definitions/ControllerMode"
@@ -219,6 +233,7 @@
         },
         "controller_reset": {
           "description": "What happens to controllers when the Live Set changes: hold or reset.",
+          "default": "reset",
           "allOf": [
             {
               "$ref": "#/definitions/ControllerReset"
@@ -227,14 +242,17 @@
         },
         "effect_on_off_reset": {
           "description": "Reset effect on/off states to their default when the Live Set changes.",
+          "default": true,
           "type": "boolean"
         },
         "filter_eg_reset": {
           "description": "Reset the Filter EG to its default state when the Live Set changes.",
+          "default": true,
           "type": "boolean"
         },
         "fixed_velocity": {
           "description": "Fixed velocity used when `touch_curve = fixed`, 1..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -242,6 +260,7 @@
         },
         "foot_pedal_1_live_set": {
           "description": "Foot Pedal 1 Live Set increment/decrement assignment.",
+          "default": "off",
           "allOf": [
             {
               "$ref": "#/definitions/FootPedalLiveSet"
@@ -250,6 +269,7 @@
         },
         "foot_pedal_1_type": {
           "description": "Hardware type connected to Foot Pedal 1.",
+          "default": "fc3a_half_on",
           "allOf": [
             {
               "$ref": "#/definitions/FootPedalType"
@@ -258,6 +278,7 @@
         },
         "foot_pedal_2_live_set": {
           "description": "Foot Pedal 2 Live Set increment/decrement assignment.",
+          "default": "off",
           "allOf": [
             {
               "$ref": "#/definitions/FootPedalLiveSet"
@@ -266,6 +287,7 @@
         },
         "foot_pedal_2_type": {
           "description": "Hardware type connected to Foot Pedal 2.",
+          "default": "fc7",
           "allOf": [
             {
               "$ref": "#/definitions/FootPedalType"
@@ -274,6 +296,7 @@
         },
         "keyboard_octave_shift": {
           "description": "Keyboard octave shift, −3..=+3.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 3.0,
@@ -281,6 +304,7 @@
         },
         "keyboard_transpose": {
           "description": "Keyboard transpose, −12..=+12 semitones.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 12.0,
@@ -288,6 +312,7 @@
         },
         "lcd_contrast": {
           "description": "LCD contrast, −10..=+10.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 10.0,
@@ -295,14 +320,17 @@
         },
         "lcd_switch": {
           "description": "Turn the LCD backlight on or off.",
+          "default": true,
           "type": "boolean"
         },
         "local_control": {
           "description": "When off, the keyboard stops playing the internal tone generator directly (still sends MIDI).",
+          "default": true,
           "type": "boolean"
         },
         "master_tune": {
           "description": "Master Tune, raw 16-bit value (`414.72–466.78 Hz`; default `0x0400`).",
+          "default": 1024,
           "type": "integer",
           "format": "uint16",
           "maximum": 65535.0,
@@ -310,14 +338,17 @@
         },
         "midi_control": {
           "description": "Receive and act on MIDI control messages from external devices.",
+          "default": false,
           "type": "boolean"
         },
         "midi_in_out": {
           "description": "Route MIDI messages through the MIDI IN/OUT ports.",
+          "default": true,
           "type": "boolean"
         },
         "output_gain": {
           "description": "Output gain, raw `0x38..=0x48` (`−24..0..+24 dB`, default `0x3E`).",
+          "default": 62,
           "type": "integer",
           "format": "uint8",
           "maximum": 72.0,
@@ -325,30 +356,37 @@
         },
         "panel_lock_delay_reverb": {
           "description": "Prevents the Delay/Reverb section from changing the sound.",
+          "default": true,
           "type": "boolean"
         },
         "panel_lock_drive_effect": {
           "description": "Prevents the Drive/Effect section from changing the sound.",
+          "default": true,
           "type": "boolean"
         },
         "panel_lock_equalizer": {
           "description": "Prevents the Equalizer section from changing the sound.",
+          "default": true,
           "type": "boolean"
         },
         "panel_lock_filter_eg": {
           "description": "Prevents the Filter/EG section from changing the sound.",
+          "default": true,
           "type": "boolean"
         },
         "panel_lock_live_set": {
           "description": "Prevents Live Set selection from changing the sound.",
+          "default": true,
           "type": "boolean"
         },
         "panel_lock_organ": {
           "description": "Prevents the Organ section from changing the sound.",
+          "default": true,
           "type": "boolean"
         },
         "power_on_page": {
           "description": "Power-on page, raw `0..=0x13` (Live Set page 1–20).",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 19.0,
@@ -356,6 +394,7 @@
         },
         "power_on_sound": {
           "description": "Power-on sound, raw `0..=0x07` (sound 1–8).",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 7.0,
@@ -370,6 +409,7 @@
         },
         "rx_channel": {
           "description": "MIDI receive channel, raw `0..=0x10` (`0..=15` = ch 1–16, `0x10` = All).",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 16.0,
@@ -377,6 +417,7 @@
         },
         "speaker_mode": {
           "description": "Internal-speaker voicing: Normal or Table.",
+          "default": "normal",
           "allOf": [
             {
               "$ref": "#/definitions/SpeakerMode"
@@ -385,6 +426,7 @@
         },
         "speaker_mute": {
           "description": "Internal-speaker mute behaviour: automatic or manual.",
+          "default": "auto",
           "allOf": [
             {
               "$ref": "#/definitions/SpeakerMute"
@@ -393,6 +435,7 @@
         },
         "touch_curve": {
           "description": "Keyboard velocity (touch) response curve.",
+          "default": "normal",
           "allOf": [
             {
               "$ref": "#/definitions/TouchCurve"
@@ -401,6 +444,7 @@
         },
         "tx_channel": {
           "description": "MIDI transmit channel, raw `0..=0x7F` (`0..=15` = ch 1–16, higher = Off).",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -408,18 +452,22 @@
         },
         "tx_rx_bank_select": {
           "description": "Send and receive Bank Select messages.",
+          "default": true,
           "type": "boolean"
         },
         "tx_rx_program_change": {
           "description": "Send and receive Program Change messages.",
+          "default": true,
           "type": "boolean"
         },
         "usb_audio_loopback": {
           "description": "Mix incoming USB audio back into the USB audio output.",
+          "default": false,
           "type": "boolean"
         },
         "usb_audio_volume": {
           "description": "USB audio volume, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -427,10 +475,12 @@
         },
         "usb_in_out": {
           "description": "Route MIDI messages through the USB TO HOST port.",
+          "default": true,
           "type": "boolean"
         },
         "value_indication": {
           "description": "Show the current parameter value on the display when a control is moved.",
+          "default": true,
           "type": "boolean"
         }
       }

@@ -54,6 +54,7 @@ pub fn balance_label(byte: u8) -> String {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct RotarySpeaker {
     /// Rotary A balance (horn vs rotor), raw 0..=127 (R63>H .. R=H .. R<H63).
     #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
@@ -110,6 +111,33 @@ pub struct RotarySpeaker {
     /// Reserved/undocumented bytes captured verbatim so writes round-trip exactly.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub reserved: Vec<RawByte>,
+}
+
+impl Default for RotarySpeaker {
+    /// Factory defaults (from the v1.10 manual / captured factory block).
+    fn default() -> Self {
+        Self {
+            a_balance: 0x46,
+            a_stereo_mono: StereoMono::Stereo,
+            a_horn_slow: 0x40,
+            a_rotor_slow: 0x40,
+            a_horn_fast: 0x48,
+            a_rotor_fast: 0x48,
+            a_horn_acceleration: 0x46,
+            a_rotor_acceleration: 0x40,
+            a_horn_deceleration: 0x40,
+            a_rotor_deceleration: 0x40,
+            b_balance: 0x50,
+            b_stereo_mono: StereoMono::Stereo,
+            b_horn_slow: 0x16,
+            b_rotor_slow: 0x18,
+            b_horn_fast: 0x5B,
+            b_rotor_fast: 0x59,
+            b_horn_transition: 0x76,
+            b_rotor_transition: 0x74,
+            reserved: Vec::new(),
+        }
+    }
 }
 
 impl RotarySpeaker {
