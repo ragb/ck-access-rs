@@ -1,12 +1,13 @@
-use anyhow::Result;
-use clap::Parser;
+//! CK CLI entry point.
+//!
+//! The whole command surface — dump / sync / show / lint / diff / schema /
+//! catalog / resolve / identity / ports — is the generic engine in
+//! `midi-access-cli`, dispatched through [`ck_core::Ck`]'s [`Device`] impl.
+//!
+//! [`Device`]: midi_access_core::Device
 
-mod cli;
-mod midi;
-mod yaml_io;
+use std::process::ExitCode;
 
-fn main() -> Result<()> {
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
-    let args = cli::Cli::parse();
-    cli::run(args)
+fn main() -> ExitCode {
+    midi_access_cli::run::<ck_core::Ck>()
 }
