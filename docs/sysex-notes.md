@@ -119,8 +119,10 @@ For tools / LLM preset generation: [`crate::catalog`](../ck-core/src/catalog.rs)
 emits one JSON bundle (`params` + value catalogs + factory `System`/`LiveSet`
 defaults; `ck catalog`), every struct has a factory `Default` + container
 `#[serde(default)]` so a *partial* preset deserializes over a complete baseline
-(a too-short `parts`/`zones` array is padded to the full count from factory
-per-slot defaults, so a delta need only list the slots it changes),
+(each `parts`/`zones` slot a delta names is merged over that slot's factory
+default — so a lone `parts: [{current_category: 1}]` still comes up as Part A
+*switched on* — and missing trailing slots are padded, so a delta need only
+name the slots and fields it changes),
 and [`crate::resolve`](../ck-core/src/resolve.rs) turns value *names* ("Hall
 Reverb", "78Rd", "2.0 kHz") into the numeric indices the codec wants (driven by
 the `params` catalog-hints; `ck resolve`). Canonical types stay numeric — names

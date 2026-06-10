@@ -64,11 +64,13 @@ pub struct LiveSet {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub audio_trigger_path: String,
     /// The four Zones (master-keyboard transmit configs). A preset may supply
-    /// fewer; missing trailing slots are padded from the factory default.
+    /// fewer (or partial) slots: each is merged over that slot's factory default
+    /// and missing trailing slots are filled from it.
     #[serde(deserialize_with = "deser_zones")]
     pub zones: Vec<Zone>,
-    /// The three Parts (A, B, C). A preset may supply fewer; missing trailing
-    /// slots are padded from the factory default.
+    /// The three Parts (A, B, C). A preset may supply fewer (or partial) slots:
+    /// each is merged over that slot's factory default and missing trailing
+    /// slots are filled from it.
     #[serde(deserialize_with = "deser_parts")]
     pub parts: Vec<Part>,
     /// Rotary Speaker settings (firmware v1.10+). `None` on firmware that doesn't
@@ -121,33 +123,70 @@ fn factory_part(i: usize) -> Part {
     }
 }
 
-/// Deserialize `zones`, padding a too-short array to [`LiveSet::ZONES`] with
-/// factory slots so a partial preset still yields a complete, encodable patch.
-fn deser_zones<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<Zone>, D::Error> {
-    let mut v = Vec::<Zone>::deserialize(d)?;
-    if v.len() > LiveSet::ZONES {
-        return Err(de::Error::custom(format!(
-            "at most {} zones, got {}",
-            LiveSet::ZONES,
-            v.len()
-        )));
+/// Deep-merge `overlay` onto `base`: mapping keys present in `overlay` win
+/// (recursing into nested mappings); every other value replaces `base` wholesale
+/// (so a supplied array like `category_voices` overrides, never element-merges).
+fn merge_over(base: serde_yaml::Value, overlay: serde_yaml::Value) -> serde_yaml::Value {
+    use serde_yaml::Value::Mapping;
+    match (base, overlay) {
+        (Mapping(mut b), Mapping(o)) => {
+            for (k, ov) in o {
+                let merged = match b.remove(&k) {
+                    Some(bv) => merge_over(bv, ov),
+                    None => ov,
+                };
+                b.insert(k, merged);
+            }
+            Mapping(b)
+        }
+        (_, overlay) => overlay,
     }
-    v.extend((v.len()..LiveSet::ZONES).map(factory_zone));
-    Ok(v)
 }
 
-/// Deserialize `parts`, padding a too-short array to [`LiveSet::PARTS`].
-fn deser_parts<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<Part>, D::Error> {
-    let mut v = Vec::<Part>::deserialize(d)?;
-    if v.len() > LiveSet::PARTS {
+/// Build the canonical-count vector for one area: each slot `i` is the supplied
+/// element (if any) merged over `factory(i)`, and missing trailing slots are the
+/// bare factory slot. So a partial preset need only name the slots — and the
+/// fields within them — that it changes; everything else fills from the factory
+/// default for *that* slot. Rejects more elements than `count`.
+fn slots<'de, D, T>(
+    d: D,
+    count: usize,
+    label: &str,
+    factory: impl Fn(usize) -> T,
+) -> Result<Vec<T>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Serialize + serde::de::DeserializeOwned,
+{
+    let raw = Vec::<serde_yaml::Value>::deserialize(d)?;
+    if raw.len() > count {
         return Err(de::Error::custom(format!(
-            "at most {} parts, got {}",
-            LiveSet::PARTS,
-            v.len()
+            "at most {count} {label}, got {}",
+            raw.len()
         )));
     }
-    v.extend((v.len()..LiveSet::PARTS).map(factory_part));
-    Ok(v)
+    (0..count)
+        .map(|i| {
+            let base = serde_yaml::to_value(factory(i)).map_err(de::Error::custom)?;
+            let v = match raw.get(i) {
+                Some(overlay) => merge_over(base, overlay.clone()),
+                None => base,
+            };
+            serde_yaml::from_value(v).map_err(de::Error::custom)
+        })
+        .collect()
+}
+
+/// Deserialize `zones`: per-slot merge over [`factory_zone`], padded to
+/// [`LiveSet::ZONES`].
+fn deser_zones<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<Zone>, D::Error> {
+    slots(d, LiveSet::ZONES, "zones", factory_zone)
+}
+
+/// Deserialize `parts`: per-slot merge over [`factory_part`], padded to
+/// [`LiveSet::PARTS`].
+fn deser_parts<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<Part>, D::Error> {
+    slots(d, LiveSet::PARTS, "parts", factory_part)
 }
 
 impl LiveSet {
@@ -282,9 +321,27 @@ mod tests {
         assert_eq!(ls.common.name, "My Patch");
         assert_eq!(ls.common.reverb_depth, 0x14); // from default
         assert_eq!(ls.parts[0].filter_cutoff, 100); // overridden
-        assert_eq!(ls.parts[0].filter_resonance, 0x40); // from default
-        assert!(ls.parts[0].filter_switch); // from default
+        assert_eq!(ls.parts[0].filter_resonance, 0x40); // from factory slot 0
+        assert!(ls.parts[0].filter_switch); // from factory slot 0
         ls.to_blocks().unwrap();
+    }
+
+    #[test]
+    fn mentioned_slot_inherits_factory_slot_defaults() {
+        // A part that only sets a voice still comes up switched on, because the
+        // mentioned slot 0 merges over factory_part(0) (Part A on/selected), not
+        // over the bare Part::default (off). Explicit fields still win.
+        let yaml = "parts:\n- current_category: 1\n- part_switch: true\n";
+        let ls: LiveSet = serde_yaml::from_str(yaml).unwrap();
+        assert_eq!(ls.parts[0].current_category, 1); // explicit
+        assert!(ls.parts[0].part_switch); // from factory slot 0
+        assert!(ls.parts[0].part_selected); // from factory slot 0
+        assert_eq!(ls.parts[0].part_color, 0x02); // factory slot 0 colour
+        assert!(ls.parts[1].part_switch); // explicit override on slot 1
+        assert_eq!(ls.parts[1].part_color, 0x08); // factory slot 1 colour
+                                                  // Zone 1 still comes up enabled when mentioned-but-empty.
+        let ls2: LiveSet = serde_yaml::from_str("zones:\n- {}\n").unwrap();
+        assert!(ls2.zones[0].zone_switch);
     }
 
     #[test]
@@ -317,6 +374,16 @@ mod tests {
     fn too_many_parts_is_rejected() {
         let err = serde_yaml::from_str::<LiveSet>("parts: [{}, {}, {}, {}]\n");
         assert!(err.is_err());
+    }
+
+    #[test]
+    fn complete_live_set_round_trips_unchanged() {
+        // The per-slot merge must be identity for a fully-specified document:
+        // serialize the factory default, deserialize it back, expect equality.
+        let ls = LiveSet::default();
+        let yaml = serde_yaml::to_string(&ls).unwrap();
+        let back: LiveSet = serde_yaml::from_str(&yaml).unwrap();
+        assert_eq!(ls, back);
     }
 
     #[test]
