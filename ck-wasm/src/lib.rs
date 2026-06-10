@@ -532,7 +532,7 @@ impl From<&params::ParamMeta> for WasmParamMeta {
             label: m.label.to_string(),
             group: m.group.to_string(),
             help: m.help.to_string(),
-            level: m.level,
+            level: m.level == params::Level::Magnitude,
         }
     }
 }

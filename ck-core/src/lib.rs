@@ -20,6 +20,7 @@ pub mod address;
 pub mod catalog;
 pub mod cc;
 pub mod codec;
+pub mod device;
 pub mod document;
 pub mod effects;
 pub mod eq;
@@ -45,6 +46,7 @@ pub use cc::{
     CONTROL_CHANGES, USB_AUDIO_VOLUME,
 };
 pub use codec::CodecError;
+pub use device::Ck;
 pub use document::{LiveSet, RawBlock, System};
 pub use effects::{ad_effect_name, part_effect_name, EffectInfo, AD_EFFECTS, PART_EFFECTS};
 pub use eq::{eq_band_frequencies, eq_freq_hz, eq_freq_label, EqBand, EqFreq, EQ_FREQUENCIES};

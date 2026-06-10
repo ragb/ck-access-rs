@@ -9,14 +9,16 @@ description = "Yamaha CK61/CK88 SysEx codec (pure, no MIDI/file I/O)."
 [features]
 default = []
 # Enabled by the wasm crate. Adds Tsify derives so types render as TS.
-tsify = ["dep:tsify-next", "dep:wasm-bindgen"]
+tsify = ["dep:tsify-next", "dep:wasm-bindgen", "midi-access-core/tsify"]
 # Enabled by the CLI when emitting JSON Schema. Adds schemars derives.
-schema = ["dep:schemars"]
+schema = ["dep:schemars", "midi-access-core/schema"]
 
 [dependencies]
+midi-access-core = { workspace = true }
 thiserror = { workspace = true }
 serde = { workspace = true }
 serde_yaml = { workspace = true }
+serde_json = { workspace = true }
 tsify-next = { workspace = true, optional = true }
 wasm-bindgen = { workspace = true, optional = true }
 schemars = { workspace = true, optional = true }
