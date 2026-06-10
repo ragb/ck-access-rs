@@ -214,7 +214,7 @@ impl RotarySpeaker {
 /// device maps it to this unit via an internal (non-linear) curve that isn't
 /// published, so these specs are for display (range/default) — like CK Editor —
 /// rather than an exact byte↔unit conversion.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, serde::Serialize)]
 pub struct RotaryParamSpec {
     /// Field name on [`RotarySpeaker`].
     pub key: &'static str,

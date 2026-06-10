@@ -20,7 +20,7 @@
 //! not individually device-verified.
 
 /// One EQ frequency step: its table index and the centre frequency it selects.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub struct EqFreq {
     pub index: u8,
     /// Centre frequency in Hz.

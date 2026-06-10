@@ -35,6 +35,11 @@ pub struct ParamMeta {
     /// (cutoff, depth, volume…); false for signed / centred / enum / index / bool.
     #[serde(default, skip_serializing_if = "is_false")]
     pub level: bool,
+    /// Which lookup catalog this field's raw value maps to, if any:
+    /// `"voices"`, `"part_effects"`, `"ad_effects"`, `"eq_freq"`, or
+    /// `"assign_target"`. Drives name↔number resolution (see [`crate::resolve`]).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog: Option<&'static str>,
 }
 
 fn is_false(b: &bool) -> bool {
@@ -53,6 +58,7 @@ const fn p(
         group,
         help,
         level: false,
+        catalog: None,
     }
 }
 
@@ -69,6 +75,25 @@ const fn pl(
         group,
         help,
         level: true,
+        catalog: None,
+    }
+}
+
+/// Same as [`p`] but tags the field with a lookup `catalog` for name resolution.
+const fn pc(
+    path: &'static str,
+    label: &'static str,
+    group: &'static str,
+    help: &'static str,
+    catalog: &'static str,
+) -> ParamMeta {
+    ParamMeta {
+        path,
+        label,
+        group,
+        help,
+        level: false,
+        catalog: Some(catalog),
     }
 }
 
@@ -116,11 +141,11 @@ pub static PARAMS: &[ParamMeta] = &[
     p("system.common.speaker_mute", "Speaker mute", "Audio levels", "Whether the speakers mute automatically when headphones are inserted, or manually."),
     // ===== System / Master EQ =====
     p("system.master_eq.low_gain", "Low gain", "Master EQ", "Master EQ low-band gain, −12..+12 dB."),
-    p("system.master_eq.low_freq", "Low frequency", "Master EQ", "Master EQ low-band centre frequency (32 Hz – 2.0 kHz)."),
+    pc("system.master_eq.low_freq", "Low frequency", "Master EQ", "Master EQ low-band centre frequency (32 Hz – 2.0 kHz).", "eq_freq"),
     p("system.master_eq.mid_gain", "Mid gain", "Master EQ", "Master EQ mid-band gain, −12..+12 dB."),
-    p("system.master_eq.mid_freq", "Mid frequency", "Master EQ", "Master EQ mid-band centre frequency (100 Hz – 10 kHz)."),
+    pc("system.master_eq.mid_freq", "Mid frequency", "Master EQ", "Master EQ mid-band centre frequency (100 Hz – 10 kHz).", "eq_freq"),
     p("system.master_eq.high_gain", "High gain", "Master EQ", "Master EQ high-band gain, −12..+12 dB."),
-    p("system.master_eq.high_freq", "High frequency", "Master EQ", "Master EQ high-band centre frequency (500 Hz – 16 kHz)."),
+    pc("system.master_eq.high_freq", "High frequency", "Master EQ", "Master EQ high-band centre frequency (500 Hz – 16 kHz).", "eq_freq"),
     // ===== Live Set / Common =====
     p("live_set.common.name", "Live Set name", "Voice", "Name of the Live Set sound (up to 15 characters)."),
     p("live_set.common.live_set_eq_mode", "Live Set EQ", "EQ (3-band)", "Enables the per-Live-Set 3-band EQ."),
@@ -132,11 +157,11 @@ pub static PARAMS: &[ParamMeta] = &[
     p("live_set.common.split_point", "Split point", "Voice", "Split note when splitting into two (note number)."),
     p("live_set.common.split_point_a_b", "Split point A–B", "Voice", "Lower split note when splitting into three."),
     p("live_set.common.split_point_b_c", "Split point B–C", "Voice", "Upper split note when splitting into three."),
-    p("live_set.common.mod_wheel_assign", "Mod wheel assign", "Mod wheel", "Control-change destination the modulation wheel drives (0–119, or 120 = USB audio volume)."),
-    p("live_set.common.foot_pedal_1_assign", "Foot pedal 1 assign", "Foot pedal 1", "Control-change destination foot pedal 1 drives (0–119, or 120 = USB audio volume)."),
+    pc("live_set.common.mod_wheel_assign", "Mod wheel assign", "Mod wheel", "Control-change destination the modulation wheel drives (0–119, or 120 = USB audio volume).", "assign_target"),
+    pc("live_set.common.foot_pedal_1_assign", "Foot pedal 1 assign", "Foot pedal 1", "Control-change destination foot pedal 1 drives (0–119, or 120 = USB audio volume).", "assign_target"),
     p("live_set.common.foot_pedal_1_limit_low", "Foot pedal 1 min", "Foot pedal 1", "Value foot pedal 1 sends at the heel position (0–127)."),
     p("live_set.common.foot_pedal_1_limit_high", "Foot pedal 1 max", "Foot pedal 1", "Value foot pedal 1 sends at the toe position (0–127)."),
-    p("live_set.common.foot_pedal_2_assign", "Foot pedal 2 assign", "Foot pedal 2", "Control-change destination foot pedal 2 drives (0–119, or 120 = USB audio volume)."),
+    pc("live_set.common.foot_pedal_2_assign", "Foot pedal 2 assign", "Foot pedal 2", "Control-change destination foot pedal 2 drives (0–119, or 120 = USB audio volume).", "assign_target"),
     p("live_set.common.foot_pedal_2_limit_low", "Foot pedal 2 min", "Foot pedal 2", "Value foot pedal 2 sends at the heel position (0–127)."),
     p("live_set.common.foot_pedal_2_limit_high", "Foot pedal 2 max", "Foot pedal 2", "Value foot pedal 2 sends at the toe position (0–127)."),
     p("live_set.common.delay_switch", "Delay", "Delay", "Master delay on/off."),
@@ -153,28 +178,28 @@ pub static PARAMS: &[ParamMeta] = &[
     pl("live_set.common.audio_trigger_volume", "Audio trigger volume", "Audio trigger", "Playback level of the audio-trigger file (0–127)."),
     p("live_set.common.audio_trigger_key", "Audio trigger key", "Audio trigger", "Which held key triggers the file: Lowest or Highest."),
     p("live_set.common.audio_trigger_play_mode", "Audio trigger mode", "Audio trigger", "Playback behaviour: One Shot, Play/Stop, Play/Pause, or Hold (v1.10)."),
-    p("live_set.common.ad_eq_low_freq", "A/D EQ low freq", "EQ (3-band)", "A/D-input EQ low-band centre frequency (32 Hz – 2.0 kHz)."),
+    pc("live_set.common.ad_eq_low_freq", "A/D EQ low freq", "EQ (3-band)", "A/D-input EQ low-band centre frequency (32 Hz – 2.0 kHz).", "eq_freq"),
     p("live_set.common.ad_eq_low_gain", "A/D EQ low gain", "EQ (3-band)", "A/D-input EQ low-band gain, −12..+12 dB."),
-    p("live_set.common.ad_eq_mid_freq", "A/D EQ mid freq", "EQ (3-band)", "A/D-input EQ mid-band centre frequency (100 Hz – 10 kHz)."),
+    pc("live_set.common.ad_eq_mid_freq", "A/D EQ mid freq", "EQ (3-band)", "A/D-input EQ mid-band centre frequency (100 Hz – 10 kHz).", "eq_freq"),
     p("live_set.common.ad_eq_mid_gain", "A/D EQ mid gain", "EQ (3-band)", "A/D-input EQ mid-band gain, −12..+12 dB."),
-    p("live_set.common.ad_eq_high_freq", "A/D EQ high freq", "EQ (3-band)", "A/D-input EQ high-band centre frequency (500 Hz – 16 kHz)."),
+    pc("live_set.common.ad_eq_high_freq", "A/D EQ high freq", "EQ (3-band)", "A/D-input EQ high-band centre frequency (500 Hz – 16 kHz).", "eq_freq"),
     p("live_set.common.ad_eq_high_gain", "A/D EQ high gain", "EQ (3-band)", "A/D-input EQ high-band gain, −12..+12 dB."),
     p("live_set.common.ad_noise_gate_switch", "Noise gate", "Noise gate", "Enables the A/D-input noise gate."),
     p("live_set.common.ad_noise_gate_threshold", "Gate threshold", "Noise gate", "A/D noise-gate threshold (−73 .. −30 dB)."),
-    p("live_set.common.ad_effect_1_type", "A/D effect 1 type", "Insert effects", "Algorithm for the A/D-input insert effect 1."),
+    pc("live_set.common.ad_effect_1_type", "A/D effect 1 type", "Insert effects", "Algorithm for the A/D-input insert effect 1.", "ad_effects"),
     pl("live_set.common.ad_effect_1_depth", "A/D effect 1 depth", "Insert effects", "Depth/mix of A/D insert effect 1 (0–127)."),
     pl("live_set.common.ad_effect_1_rate", "A/D effect 1 rate", "Insert effects", "Rate of A/D insert effect 1 (0–127)."),
-    p("live_set.common.ad_effect_2_type", "A/D effect 2 type", "Insert effects", "Algorithm for the A/D-input insert effect 2."),
+    pc("live_set.common.ad_effect_2_type", "A/D effect 2 type", "Insert effects", "Algorithm for the A/D-input insert effect 2.", "ad_effects"),
     pl("live_set.common.ad_effect_2_depth", "A/D effect 2 depth", "Insert effects", "Depth/mix of A/D insert effect 2 (0–127)."),
     pl("live_set.common.ad_effect_2_rate", "A/D effect 2 rate", "Insert effects", "Rate of A/D insert effect 2 (0–127)."),
     pl("live_set.common.ad_volume", "A/D level", "Insert effects", "A/D-input level within the Live Set (0–127)."),
     // ===== Live Set / EQ =====
     p("live_set.eq.low_gain", "Low gain", "EQ (3-band)", "Live Set EQ low-band gain, −12..+12 dB."),
-    p("live_set.eq.low_freq", "Low frequency", "EQ (3-band)", "Live Set EQ low-band centre frequency (32 Hz – 2.0 kHz)."),
+    pc("live_set.eq.low_freq", "Low frequency", "EQ (3-band)", "Live Set EQ low-band centre frequency (32 Hz – 2.0 kHz).", "eq_freq"),
     p("live_set.eq.mid_gain", "Mid gain", "EQ (3-band)", "Live Set EQ mid-band gain, −12..+12 dB."),
-    p("live_set.eq.mid_freq", "Mid frequency", "EQ (3-band)", "Live Set EQ mid-band centre frequency (100 Hz – 10 kHz)."),
+    pc("live_set.eq.mid_freq", "Mid frequency", "EQ (3-band)", "Live Set EQ mid-band centre frequency (100 Hz – 10 kHz).", "eq_freq"),
     p("live_set.eq.high_gain", "High gain", "EQ (3-band)", "Live Set EQ high-band gain, −12..+12 dB."),
-    p("live_set.eq.high_freq", "High frequency", "EQ (3-band)", "Live Set EQ high-band centre frequency (500 Hz – 16 kHz)."),
+    pc("live_set.eq.high_freq", "High frequency", "EQ (3-band)", "Live Set EQ high-band centre frequency (500 Hz – 16 kHz).", "eq_freq"),
     // ===== Live Set / Audio Trigger path =====
     p("live_set.audio_trigger_path", "Audio trigger file", "Audio trigger", "Path of the audio file played by the audio trigger."),
     // ===== Live Set / Rotary =====
@@ -218,7 +243,7 @@ pub static PARAMS: &[ParamMeta] = &[
     p("live_set.zone.transmit_controllers.foot_pedal_2", "Forward Foot Pedal 2", "Forward live controllers", "Relay foot pedal 2 to this Zone's channel."),
     // ===== Live Set / Part =====
     p("live_set.part.current_category", "Category", "Voice", "Active sound category for this part (selects which category voice plays)."),
-    p("live_set.part.category_voices", "Category voices", "Voice", "Selected voice number per category for this part."),
+    pc("live_set.part.category_voices", "Category voices", "Voice", "Selected voice number per category for this part.", "voices"),
     p("live_set.part.note_shift", "Note shift", "Mix and tuning", "Transposes this part −24..+24 semitones."),
     pl("live_set.part.part_volume", "Volume", "Mix and tuning", "This part's volume (0–127)."),
     p("live_set.part.part_color", "Colour", "Mix and tuning", "Display colour for this part (0–11)."),
@@ -263,11 +288,11 @@ pub static PARAMS: &[ParamMeta] = &[
     p("live_set.part.drive_type", "Drive type", "Drive", "Drive model: Overdrive, Distortion, Rotary A, Rotary B, or Compressor."),
     pl("live_set.part.drive_depth", "Drive depth", "Drive", "Drive amount (0–127)."),
     p("live_set.part.effect_1_switch", "Effect 1", "Insert effects", "Insert effect 1 on/off."),
-    p("live_set.part.effect_1_type", "Effect 1 type", "Insert effects", "Algorithm for insert effect 1."),
+    pc("live_set.part.effect_1_type", "Effect 1 type", "Insert effects", "Algorithm for insert effect 1.", "part_effects"),
     pl("live_set.part.effect_1_depth", "Effect 1 depth", "Insert effects", "Depth/mix of insert effect 1 (0–127)."),
     pl("live_set.part.effect_1_rate", "Effect 1 rate", "Insert effects", "Rate of insert effect 1 (0–127)."),
     p("live_set.part.effect_2_switch", "Effect 2", "Insert effects", "Insert effect 2 on/off."),
-    p("live_set.part.effect_2_type", "Effect 2 type", "Insert effects", "Algorithm for insert effect 2."),
+    pc("live_set.part.effect_2_type", "Effect 2 type", "Insert effects", "Algorithm for insert effect 2.", "part_effects"),
     pl("live_set.part.effect_2_depth", "Effect 2 depth", "Insert effects", "Depth/mix of insert effect 2 (0–127)."),
     pl("live_set.part.effect_2_rate", "Effect 2 rate", "Insert effects", "Rate of insert effect 2 (0–127)."),
 ];

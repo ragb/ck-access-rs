@@ -555,6 +555,42 @@ pub fn param_catalog() -> Vec<WasmParamMeta> {
     params::PARAMS.iter().map(WasmParamMeta::from).collect()
 }
 
+// === catalog bundle + name resolution ===
+
+/// The full metadata bundle (params + value catalogs + factory defaults) as one
+/// JSON object — everything an LLM/tool needs to author a preset by name.
+#[wasm_bindgen(js_name = catalog)]
+pub fn catalog() -> Result<JsValue, JsError> {
+    serde_wasm_bindgen::to_value(&ck_core::catalog::catalog())
+        .map_err(|e| JsError::new(&e.to_string()))
+}
+
+/// Resolve a value name in a catalog (`"voices"`, `"part_effects"`,
+/// `"ad_effects"`, `"eq_freq"`, `"assign_target"`) to its number, or null.
+#[wasm_bindgen(js_name = resolveName)]
+pub fn resolve_name(catalog: &str, name: &str) -> Option<i32> {
+    ck_core::resolve_name(catalog, name).and_then(|v| i32::try_from(v).ok())
+}
+
+/// Label a numeric value via a catalog (inverse of `resolveName`), or null.
+#[wasm_bindgen(js_name = labelValue)]
+pub fn label_value(catalog: &str, value: i32) -> Option<String> {
+    ck_core::label_value(catalog, value as i64)
+}
+
+/// Normalize a (possibly partial, possibly name-using) Live Set document to
+/// numeric YAML ready for `liveSetFromYaml`. Accepts YAML or JSON.
+#[wasm_bindgen(js_name = resolveLiveSetNames)]
+pub fn resolve_live_set_names(input: &str) -> Result<String, JsError> {
+    ck_core::resolve_names_live_set(input).map_err(|e| JsError::new(&e.to_string()))
+}
+
+/// Normalize a (possibly partial, possibly name-using) System document.
+#[wasm_bindgen(js_name = resolveSystemNames)]
+pub fn resolve_system_names(input: &str) -> Result<String, JsError> {
+    ck_core::resolve_names_system(input).map_err(|e| JsError::new(&e.to_string()))
+}
+
 // === address helpers ===
 
 #[wasm_bindgen(js_name = systemCommonBase)]

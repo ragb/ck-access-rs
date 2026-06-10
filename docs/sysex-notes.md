@@ -111,9 +111,18 @@ this sequence and the typed document; blocks this crate doesn't model
   transcribed, not yet device-verified.
 
 Field help lives in [`crate::params`](../ck-core/src/params.rs): a runtime
-`ParamMeta` catalog (label / group / help / level) keyed by serde path
-(`system.common.master_tune`, `live_set.part.filter_cutoff`, …), so the editor's
-`?` buttons read help from the codec instead of a hand-written TS table.
+`ParamMeta` catalog (label / group / help / level / catalog-hint) keyed by serde
+path (`system.common.master_tune`, `live_set.part.filter_cutoff`, …), so the
+editor's `?` buttons read help from the codec instead of a hand-written TS table.
+
+For tools / LLM preset generation: [`crate::catalog`](../ck-core/src/catalog.rs)
+emits one JSON bundle (`params` + value catalogs + factory `System`/`LiveSet`
+defaults; `ck catalog`), every struct has a factory `Default` + container
+`#[serde(default)]` so a *partial* preset deserializes over a complete baseline,
+and [`crate::resolve`](../ck-core/src/resolve.rs) turns value *names* ("Hall
+Reverb", "78Rd", "2.0 kHz") into the numeric indices the codec wants (driven by
+the `params` catalog-hints; `ck resolve`). Canonical types stay numeric — names
+are an input layer only, so the editor and byte codec are unaffected.
 
 Engineering-unit fields whose exact conversion isn't device-confirmed (dB / Hz /
 effect-type indices) are kept as **documented raw bytes** so the codec

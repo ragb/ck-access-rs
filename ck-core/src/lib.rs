@@ -17,6 +17,7 @@
 //! protocol notes and the (still-pending) hardware verification status.
 
 pub mod address;
+pub mod catalog;
 pub mod cc;
 pub mod codec;
 pub mod document;
@@ -27,6 +28,7 @@ pub mod live_set;
 pub mod live_set_select;
 pub mod params;
 pub mod part;
+pub mod resolve;
 pub mod rotary;
 #[cfg(feature = "schema")]
 pub mod schema;
@@ -37,6 +39,7 @@ pub mod yaml;
 pub mod zone;
 
 pub use address::{AddressSpace, Part as PartSlot};
+pub use catalog::{catalog, Catalog};
 pub use cc::{
     assign_target_name, assignable_targets, cc_info, cc_name, AssignTarget, CcInfo,
     CONTROL_CHANGES, USB_AUDIO_VOLUME,
@@ -53,6 +56,7 @@ pub use live_set_select::{
 };
 pub use params::{field_help, field_meta, params_in_group, ParamMeta, PARAMS};
 pub use part::Part;
+pub use resolve::{label_value, resolve_name, resolve_names_live_set, resolve_names_system};
 pub use rotary::{
     balance_label as rotary_balance_label, RotaryParamSpec, RotarySpeaker, StereoMono,
     BALANCE_CENTER as ROTARY_BALANCE_CENTER, ROTARY_SPECS,

@@ -16,7 +16,7 @@
 //! setting — [`crate::part::Part::pan`] — not a Control Change.)
 
 /// Description of one Control Change number on the CK.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub struct CcInfo {
     pub number: u8,
     /// Human label, e.g. `"A: Cutoff"`, `"Modulation"`, `"Sustain"`.
@@ -139,7 +139,7 @@ pub fn cc_name(number: u8) -> Option<&'static str> {
 }
 
 /// A destination a controller (Mod Wheel / Foot Pedal) can be assigned to.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
 pub struct AssignTarget {
     /// The stored assign value (`0..=119` = that CC number, `120` = USB audio).
     pub value: u8,

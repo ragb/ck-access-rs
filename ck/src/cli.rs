@@ -106,6 +106,20 @@ pub enum Command {
         /// Which schema: `system` or `live-set`.
         kind: String,
     },
+
+    /// Print the full metadata catalog (params + value lists + defaults) as JSON.
+    /// One-stop context for tools / LLM preset generation.
+    Catalog,
+
+    /// Normalize a preset's value names to numbers (e.g. `effect_1_type:
+    /// "Hall Reverb"` -> `25`), printing codec-ready YAML.
+    Resolve {
+        /// A System or Live Set YAML file (may be partial / use names).
+        path: PathBuf,
+        /// Treat the file as a System document (default: Live Set).
+        #[arg(long)]
+        system: bool,
+    },
 }
 
 /// Which document a dump/sync targets.
@@ -163,7 +177,28 @@ pub fn run(cli: Cli) -> Result<()> {
         Command::Diff { left, right } => diff_files(&left, &right),
         Command::Voices { category } => list_voices(category.as_deref()),
         Command::Schema { kind } => emit_schema(&kind),
+        Command::Catalog => emit_catalog(),
+        Command::Resolve { path, system } => resolve(&path, system),
     }
+}
+
+fn emit_catalog() -> Result<()> {
+    let json = serde_json::to_string_pretty(&ck_core::catalog()).context("serialize catalog")?;
+    println!("{json}");
+    Ok(())
+}
+
+fn resolve(path: &Path, system: bool) -> Result<()> {
+    let input =
+        std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
+    let out = if system {
+        ck_core::resolve_names_system(&input)
+    } else {
+        ck_core::resolve_names_live_set(&input)
+    }
+    .map_err(|e| anyhow!("resolve names: {e}"))?;
+    print!("{out}");
+    Ok(())
 }
 
 // === session ===

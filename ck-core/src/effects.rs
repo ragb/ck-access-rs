@@ -19,7 +19,7 @@
 //! Not yet device-verified.
 
 /// Description of one effect algorithm.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub struct EffectInfo {
     pub number: u8,
     /// Human label matching the panel, e.g. `"VCM Stereo Phaser"`.
