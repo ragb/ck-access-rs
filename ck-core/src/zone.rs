@@ -113,26 +113,37 @@ impl ZoneTransmitControllers {
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Zone {
+    /// Enables this Zone's MIDI transmission.
     pub zone_switch: bool,
     /// Transmit channel, raw `0..=0x0F` (= MIDI ch 1–16).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 15)))]
     pub transmit_channel: u8,
     /// Transpose (octave), −3..=+3.
+    #[cfg_attr(feature = "schema", schemars(range(min = -3, max = 3)))]
     pub transpose_octave: i8,
     /// Transpose (semitone), −11..=+11.
+    #[cfg_attr(feature = "schema", schemars(range(min = -11, max = 11)))]
     pub transpose_semitone: i8,
     /// Note limit low, 0..=127 (C-2 .. G8).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub note_limit_low: u8,
     /// Note limit high, 0..=127 (C-2 .. G8).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub note_limit_high: u8,
     /// MIDI volume, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub midi_volume: u8,
     /// MIDI pan, −64..=+63 (L64 .. C .. R63).
+    #[cfg_attr(feature = "schema", schemars(range(min = -64, max = 63)))]
     pub midi_pan: i8,
     /// MIDI bank select MSB, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub midi_bank_msb: u8,
     /// MIDI bank select LSB, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub midi_bank_lsb: u8,
     /// MIDI program number, raw 0..=127 (program 1–128).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub midi_program: u8,
     /// Which snapshot messages (Bank/PC/Volume/Pan) this Zone sends.
     pub transmit: ZoneTransmit,

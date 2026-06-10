@@ -56,26 +56,56 @@ pub fn balance_label(byte: u8) -> String {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RotarySpeaker {
     /// Rotary A balance (horn vs rotor), raw 0..=127 (R63>H .. R=H .. R<H63).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub a_balance: u8,
+    /// Rotary A output: stereo or mono.
     pub a_stereo_mono: StereoMono,
+    /// Rotary A horn slow speed index (23.0–89.6 rpm).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub a_horn_slow: u8,
+    /// Rotary A rotor slow speed index (22.7–88.3 rpm).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub a_rotor_slow: u8,
+    /// Rotary A horn fast speed index (209.4–817.6 rpm).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub a_horn_fast: u8,
+    /// Rotary A rotor fast speed index (189.3–736.8 rpm).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub a_rotor_fast: u8,
+    /// Rotary A horn acceleration index (0.21–2.00).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub a_horn_acceleration: u8,
+    /// Rotary A rotor acceleration index (0.21–2.00).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub a_rotor_acceleration: u8,
+    /// Rotary A horn deceleration index (0.21–2.00).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub a_horn_deceleration: u8,
+    /// Rotary A rotor deceleration index (0.21–2.00).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub a_rotor_deceleration: u8,
     /// Rotary B balance, raw 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub b_balance: u8,
+    /// Rotary B output: stereo or mono.
     pub b_stereo_mono: StereoMono,
+    /// Rotary B horn slow speed index (2.5–159.0 rpm).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub b_horn_slow: u8,
+    /// Rotary B rotor slow speed index (2.5–159.0 rpm).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub b_rotor_slow: u8,
+    /// Rotary B horn fast speed index (161.5–2382 rpm).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub b_horn_fast: u8,
+    /// Rotary B rotor fast speed index (161.5–2382 rpm).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub b_rotor_fast: u8,
     /// Rotary B horn transition, 0..=127 (default 118).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub b_horn_transition: u8,
     /// Rotary B rotor transition, 0..=127 (default 116).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub b_rotor_transition: u8,
     /// Reserved/undocumented bytes captured verbatim so writes round-trip exactly.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]

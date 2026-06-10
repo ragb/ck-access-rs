@@ -67,34 +67,43 @@
           "description": "High frequency, raw `0x1C..=0x3A` (500 Hz – 16 kHz).",
           "type": "integer",
           "format": "uint8",
-          "minimum": 0.0
+          "maximum": 58.0,
+          "minimum": 28.0
         },
         "high_gain": {
           "description": "High gain, −12..=+12 dB.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 12.0,
+          "minimum": -12.0
         },
         "low_freq": {
           "description": "Low frequency, raw `0x04..=0x28` (32 Hz – 2.0 kHz).",
           "type": "integer",
           "format": "uint8",
-          "minimum": 0.0
+          "maximum": 40.0,
+          "minimum": 4.0
         },
         "low_gain": {
           "description": "Low gain, −12..=+12 dB.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 12.0,
+          "minimum": -12.0
         },
         "mid_freq": {
           "description": "Mid frequency, raw `0x0E..=0x36` (100 Hz – 10 kHz).",
           "type": "integer",
           "format": "uint8",
-          "minimum": 0.0
+          "maximum": 54.0,
+          "minimum": 14.0
         },
         "mid_gain": {
           "description": "Mid gain, −12..=+12 dB.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 12.0,
+          "minimum": -12.0
         },
         "reserved": {
           "description": "Reserved/undocumented bytes captured verbatim so writes round-trip exactly.",
@@ -190,111 +199,166 @@
           "description": "A/D input volume, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "bluetooth_volume": {
           "description": "Bluetooth volume, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "controller_mode": {
-          "$ref": "#/definitions/ControllerMode"
+          "description": "Knob pickup behaviour when the physical position differs from the stored value.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ControllerMode"
+            }
+          ]
         },
         "controller_reset": {
-          "$ref": "#/definitions/ControllerReset"
+          "description": "What happens to controllers when the Live Set changes: hold or reset.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ControllerReset"
+            }
+          ]
         },
         "effect_on_off_reset": {
+          "description": "Reset effect on/off states to their default when the Live Set changes.",
           "type": "boolean"
         },
         "filter_eg_reset": {
+          "description": "Reset the Filter EG to its default state when the Live Set changes.",
           "type": "boolean"
         },
         "fixed_velocity": {
           "description": "Fixed velocity used when `touch_curve = fixed`, 1..=127.",
           "type": "integer",
           "format": "uint8",
-          "minimum": 0.0
+          "maximum": 127.0,
+          "minimum": 1.0
         },
         "foot_pedal_1_live_set": {
-          "$ref": "#/definitions/FootPedalLiveSet"
+          "description": "Foot Pedal 1 Live Set increment/decrement assignment.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/FootPedalLiveSet"
+            }
+          ]
         },
         "foot_pedal_1_type": {
-          "$ref": "#/definitions/FootPedalType"
+          "description": "Hardware type connected to Foot Pedal 1.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/FootPedalType"
+            }
+          ]
         },
         "foot_pedal_2_live_set": {
-          "$ref": "#/definitions/FootPedalLiveSet"
+          "description": "Foot Pedal 2 Live Set increment/decrement assignment.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/FootPedalLiveSet"
+            }
+          ]
         },
         "foot_pedal_2_type": {
-          "$ref": "#/definitions/FootPedalType"
+          "description": "Hardware type connected to Foot Pedal 2.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/FootPedalType"
+            }
+          ]
         },
         "keyboard_octave_shift": {
           "description": "Keyboard octave shift, −3..=+3.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 3.0,
+          "minimum": -3.0
         },
         "keyboard_transpose": {
           "description": "Keyboard transpose, −12..=+12 semitones.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 12.0,
+          "minimum": -12.0
         },
         "lcd_contrast": {
           "description": "LCD contrast, −10..=+10.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 10.0,
+          "minimum": -10.0
         },
         "lcd_switch": {
+          "description": "Turn the LCD backlight on or off.",
           "type": "boolean"
         },
         "local_control": {
+          "description": "When off, the keyboard stops playing the internal tone generator directly (still sends MIDI).",
           "type": "boolean"
         },
         "master_tune": {
           "description": "Master Tune, raw 16-bit value (`414.72–466.78 Hz`; default `0x0400`).",
           "type": "integer",
           "format": "uint16",
+          "maximum": 65535.0,
           "minimum": 0.0
         },
         "midi_control": {
+          "description": "Receive and act on MIDI control messages from external devices.",
           "type": "boolean"
         },
         "midi_in_out": {
+          "description": "Route MIDI messages through the MIDI IN/OUT ports.",
           "type": "boolean"
         },
         "output_gain": {
           "description": "Output gain, raw `0x38..=0x48` (`−24..0..+24 dB`, default `0x3E`).",
           "type": "integer",
           "format": "uint8",
-          "minimum": 0.0
+          "maximum": 72.0,
+          "minimum": 56.0
         },
         "panel_lock_delay_reverb": {
+          "description": "Prevents the Delay/Reverb section from changing the sound.",
           "type": "boolean"
         },
         "panel_lock_drive_effect": {
+          "description": "Prevents the Drive/Effect section from changing the sound.",
           "type": "boolean"
         },
         "panel_lock_equalizer": {
+          "description": "Prevents the Equalizer section from changing the sound.",
           "type": "boolean"
         },
         "panel_lock_filter_eg": {
+          "description": "Prevents the Filter/EG section from changing the sound.",
           "type": "boolean"
         },
         "panel_lock_live_set": {
+          "description": "Prevents Live Set selection from changing the sound.",
           "type": "boolean"
         },
         "panel_lock_organ": {
+          "description": "Prevents the Organ section from changing the sound.",
           "type": "boolean"
         },
         "power_on_page": {
           "description": "Power-on page, raw `0..=0x13` (Live Set page 1–20).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 19.0,
           "minimum": 0.0
         },
         "power_on_sound": {
           "description": "Power-on sound, raw `0..=0x07` (sound 1–8).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 7.0,
           "minimum": 0.0
         },
         "reserved": {
@@ -308,42 +372,65 @@
           "description": "MIDI receive channel, raw `0..=0x10` (`0..=15` = ch 1–16, `0x10` = All).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 16.0,
           "minimum": 0.0
         },
         "speaker_mode": {
-          "$ref": "#/definitions/SpeakerMode"
+          "description": "Internal-speaker voicing: Normal or Table.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/SpeakerMode"
+            }
+          ]
         },
         "speaker_mute": {
-          "$ref": "#/definitions/SpeakerMute"
+          "description": "Internal-speaker mute behaviour: automatic or manual.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/SpeakerMute"
+            }
+          ]
         },
         "touch_curve": {
-          "$ref": "#/definitions/TouchCurve"
+          "description": "Keyboard velocity (touch) response curve.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/TouchCurve"
+            }
+          ]
         },
         "tx_channel": {
           "description": "MIDI transmit channel, raw `0..=0x7F` (`0..=15` = ch 1–16, higher = Off).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "tx_rx_bank_select": {
+          "description": "Send and receive Bank Select messages.",
           "type": "boolean"
         },
         "tx_rx_program_change": {
+          "description": "Send and receive Program Change messages.",
           "type": "boolean"
         },
         "usb_audio_loopback": {
+          "description": "Mix incoming USB audio back into the USB audio output.",
           "type": "boolean"
         },
         "usb_audio_volume": {
           "description": "USB audio volume, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "usb_in_out": {
+          "description": "Route MIDI messages through the USB TO HOST port.",
           "type": "boolean"
         },
         "value_indication": {
+          "description": "Show the current parameter value on the display when a control is moved.",
           "type": "boolean"
         }
       }

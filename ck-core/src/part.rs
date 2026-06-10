@@ -89,69 +89,138 @@ byte_enum! {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Part {
     /// Active category, 0..=9 (indexes `category_voices`).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 9)))]
     pub current_category: u8,
     /// Selected voice number per category (10 entries). Each is the absolute
     /// voice number for that category — see [`crate::voices`].
     pub category_voices: Vec<u16>,
     /// Note shift, −24..=+24 semitones.
+    #[cfg_attr(feature = "schema", schemars(range(min = -24, max = 24)))]
     pub note_shift: i8,
+    /// Part volume, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub part_volume: u8,
     /// Part colour, 0..=11 (0=Red .. 11=Rose).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 11)))]
     pub part_color: u8,
+    /// Turns this part on or off.
     pub part_switch: bool,
+    /// Marks this part as the currently selected/edited part.
     pub part_selected: bool,
+    /// Which insert-effect slot this part edits (Effect1/Effect2).
     pub effect_select: EffectSelect,
     /// Stereo pan, −63..=+63 (L63 .. C .. R63). Added in CK firmware v1.10
     /// (Part block offset 0x1C; device-verified by capture-and-diff).
+    #[cfg_attr(feature = "schema", schemars(range(min = -63, max = 63)))]
     pub pan: i8,
+    /// Plays this part monophonically or polyphonically.
     pub mono_poly: MonoPoly,
+    /// Mono/portamento behaviour (Normal, Fingered, Full-time).
     pub mono_type: MonoType,
+    /// Portamento time, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub portamento_time: u8,
+    /// Portamento time interpretation (Rate or Time).
     pub portamento_mode: PortamentoMode,
+    /// Enables unison voicing.
     pub unison_switch: bool,
+    /// Unison voicing (MultiLayer, Harmonics, SubHarmonics).
     pub unison_type: UnisonType,
+    /// Unison volume, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub unison_volume: u8,
+    /// Unison detune, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub unison_detune: u8,
     /// Pitch bend range, −24..=+24 semitones.
+    #[cfg_attr(feature = "schema", schemars(range(min = -24, max = 24)))]
     pub pitch_bend_range: i8,
+    /// Pitch modulation depth, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub pitch_modulation_depth: u8,
+    /// Amplifier modulation depth, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub amplifier_modulation_depth: u8,
+    /// Filter modulation depth, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub filter_modulation_depth: u8,
     /// Modulation speed, −64..=+63.
+    #[cfg_attr(feature = "schema", schemars(range(min = -64, max = 63)))]
     pub modulation_speed: i8,
+    /// This part responds to Expression (CC 11).
     pub receive_expression: bool,
+    /// This part responds to the Sustain pedal (CC 64).
     pub receive_sustain: bool,
+    /// This part responds to the Sostenuto pedal (CC 66).
     pub receive_sostenuto: bool,
+    /// This part responds to the Soft pedal (CC 67).
     pub receive_soft: bool,
+    /// External-keyboard routing (ExtInt, ExtOnly, Off).
     pub external_keyboard: ExternalKeyboard,
+    /// Touch sensitivity depth, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub touch_sensitivity_depth: u8,
+    /// Touch sensitivity offset, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub touch_sensitivity_offset: u8,
     /// Organ drawbars, 9 entries: 16', 5⅓', 8', 4', 2⅔', 2', 1⅗', 1⅓', 1'.
     pub drawbars: Vec<u8>,
+    /// Enables organ percussion.
     pub percussion_switch: bool,
+    /// Organ percussion harmonic (Third or Second).
     pub percussion_type: PercussionType,
+    /// Organ percussion decay (Slow or Fast).
     pub percussion_decay: PercussionDecay,
+    /// Organ percussion volume (Normal or Soft).
     pub percussion_volume: PercussionVolume,
+    /// Enables the organ vibrato/chorus scanner.
     pub vibrato_chorus_switch: bool,
+    /// Vibrato/Chorus program (V1, C1, V2, C2, V3, C3).
     pub vibrato_chorus_type: VibratoChorusType,
+    /// Enables the filter.
     pub filter_switch: bool,
+    /// Filter cutoff, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub filter_cutoff: u8,
+    /// Filter resonance, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub filter_resonance: u8,
+    /// Enables the amplitude envelope generator.
     pub eg_switch: bool,
+    /// EG attack, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub eg_attack: u8,
+    /// EG release, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub eg_release: u8,
+    /// Enables the drive/amp stage.
     pub drive_switch: bool,
+    /// Drive/amp model.
     pub drive_type: DriveType,
+    /// Drive depth, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub drive_depth: u8,
+    /// Insert effect 1 on/off.
     pub effect_1_switch: bool,
     /// Effect 1 type, raw 0x00..=0x23.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 35)))]
     pub effect_1_type: u8,
+    /// Effect 1 depth, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub effect_1_depth: u8,
+    /// Effect 1 rate, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub effect_1_rate: u8,
+    /// Insert effect 2 on/off.
     pub effect_2_switch: bool,
     /// Effect 2 type, raw 0x00..=0x23.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 35)))]
     pub effect_2_type: u8,
+    /// Effect 2 depth, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub effect_2_depth: u8,
+    /// Effect 2 rate, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub effect_2_rate: u8,
     /// Reserved/undocumented bytes captured verbatim so writes round-trip exactly.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]

@@ -73,56 +73,95 @@ byte_enum! {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SystemCommon {
     /// Master Tune, raw 16-bit value (`414.72–466.78 Hz`; default `0x0400`).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 65535)))]
     pub master_tune: u16,
     /// Keyboard octave shift, −3..=+3.
+    #[cfg_attr(feature = "schema", schemars(range(min = -3, max = 3)))]
     pub keyboard_octave_shift: i8,
     /// Keyboard transpose, −12..=+12 semitones.
+    #[cfg_attr(feature = "schema", schemars(range(min = -12, max = 12)))]
     pub keyboard_transpose: i8,
+    /// What happens to controllers when the Live Set changes: hold or reset.
     pub controller_reset: ControllerReset,
+    /// When off, the keyboard stops playing the internal tone generator directly (still sends MIDI).
     pub local_control: bool,
     /// MIDI transmit channel, raw `0..=0x7F` (`0..=15` = ch 1–16, higher = Off).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub tx_channel: u8,
     /// MIDI receive channel, raw `0..=0x10` (`0..=15` = ch 1–16, `0x10` = All).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 16)))]
     pub rx_channel: u8,
+    /// Receive and act on MIDI control messages from external devices.
     pub midi_control: bool,
     /// Output gain, raw `0x38..=0x48` (`−24..0..+24 dB`, default `0x3E`).
+    #[cfg_attr(feature = "schema", schemars(range(min = 56, max = 72)))]
     pub output_gain: u8,
+    /// Keyboard velocity (touch) response curve.
     pub touch_curve: TouchCurve,
     /// Fixed velocity used when `touch_curve = fixed`, 1..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 1, max = 127)))]
     pub fixed_velocity: u8,
+    /// Send and receive Bank Select messages.
     pub tx_rx_bank_select: bool,
+    /// Send and receive Program Change messages.
     pub tx_rx_program_change: bool,
+    /// Route MIDI messages through the MIDI IN/OUT ports.
     pub midi_in_out: bool,
+    /// Route MIDI messages through the USB TO HOST port.
     pub usb_in_out: bool,
+    /// Show the current parameter value on the display when a control is moved.
     pub value_indication: bool,
+    /// Knob pickup behaviour when the physical position differs from the stored value.
     pub controller_mode: ControllerMode,
+    /// Turn the LCD backlight on or off.
     pub lcd_switch: bool,
     /// LCD contrast, −10..=+10.
+    #[cfg_attr(feature = "schema", schemars(range(min = -10, max = 10)))]
     pub lcd_contrast: i8,
+    /// Prevents Live Set selection from changing the sound.
     pub panel_lock_live_set: bool,
+    /// Prevents the Organ section from changing the sound.
     pub panel_lock_organ: bool,
+    /// Prevents the Filter/EG section from changing the sound.
     pub panel_lock_filter_eg: bool,
+    /// Prevents the Drive/Effect section from changing the sound.
     pub panel_lock_drive_effect: bool,
+    /// Prevents the Delay/Reverb section from changing the sound.
     pub panel_lock_delay_reverb: bool,
+    /// Prevents the Equalizer section from changing the sound.
     pub panel_lock_equalizer: bool,
     /// Power-on page, raw `0..=0x13` (Live Set page 1–20).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 19)))]
     pub power_on_page: u8,
     /// Power-on sound, raw `0..=0x07` (sound 1–8).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 7)))]
     pub power_on_sound: u8,
+    /// Hardware type connected to Foot Pedal 1.
     pub foot_pedal_1_type: FootPedalType,
+    /// Foot Pedal 1 Live Set increment/decrement assignment.
     pub foot_pedal_1_live_set: FootPedalLiveSet,
+    /// Hardware type connected to Foot Pedal 2.
     pub foot_pedal_2_type: FootPedalType,
+    /// Foot Pedal 2 Live Set increment/decrement assignment.
     pub foot_pedal_2_live_set: FootPedalLiveSet,
+    /// Reset the Filter EG to its default state when the Live Set changes.
     pub filter_eg_reset: bool,
+    /// Reset effect on/off states to their default when the Live Set changes.
     pub effect_on_off_reset: bool,
     /// USB audio volume, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub usb_audio_volume: u8,
     /// Bluetooth volume, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub bluetooth_volume: u8,
     /// A/D input volume, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub ad_volume: u8,
+    /// Mix incoming USB audio back into the USB audio output.
     pub usb_audio_loopback: bool,
+    /// Internal-speaker voicing: Normal or Table.
     pub speaker_mode: SpeakerMode,
+    /// Internal-speaker mute behaviour: automatic or manual.
     pub speaker_mute: SpeakerMute,
     /// Reserved/undocumented bytes captured verbatim so writes round-trip exactly.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -243,16 +282,22 @@ impl SystemCommon {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MasterEq {
     /// Low gain, −12..=+12 dB.
+    #[cfg_attr(feature = "schema", schemars(range(min = -12, max = 12)))]
     pub low_gain: i8,
     /// Low frequency, raw `0x04..=0x28` (32 Hz – 2.0 kHz).
+    #[cfg_attr(feature = "schema", schemars(range(min = 4, max = 40)))]
     pub low_freq: u8,
     /// Mid gain, −12..=+12 dB.
+    #[cfg_attr(feature = "schema", schemars(range(min = -12, max = 12)))]
     pub mid_gain: i8,
     /// Mid frequency, raw `0x0E..=0x36` (100 Hz – 10 kHz).
+    #[cfg_attr(feature = "schema", schemars(range(min = 14, max = 54)))]
     pub mid_freq: u8,
     /// High gain, −12..=+12 dB.
+    #[cfg_attr(feature = "schema", schemars(range(min = -12, max = 12)))]
     pub high_gain: i8,
     /// High frequency, raw `0x1C..=0x3A` (500 Hz – 16 kHz).
+    #[cfg_attr(feature = "schema", schemars(range(min = 28, max = 58)))]
     pub high_freq: u8,
     /// Reserved/undocumented bytes captured verbatim so writes round-trip exactly.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]

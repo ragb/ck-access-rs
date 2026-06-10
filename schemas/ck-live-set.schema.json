@@ -163,167 +163,233 @@
       ],
       "properties": {
         "ad_effect_1_depth": {
+          "description": "A/D effect 1 depth, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "ad_effect_1_rate": {
+          "description": "A/D effect 1 rate, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "ad_effect_1_type": {
           "description": "A/D effect 1 type, raw 0x00..=0x22.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 34.0,
           "minimum": 0.0
         },
         "ad_effect_2_depth": {
+          "description": "A/D effect 2 depth, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "ad_effect_2_rate": {
+          "description": "A/D effect 2 rate, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "ad_effect_2_type": {
           "description": "A/D effect 2 type, raw 0x00..=0x22.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 34.0,
           "minimum": 0.0
         },
         "ad_eq_high_freq": {
+          "description": "A/D input EQ high frequency, raw 0x1C..=0x3A.",
           "type": "integer",
           "format": "uint8",
-          "minimum": 0.0
+          "maximum": 58.0,
+          "minimum": 28.0
         },
         "ad_eq_high_gain": {
+          "description": "A/D input EQ high gain, −12..=+12 dB.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 12.0,
+          "minimum": -12.0
         },
         "ad_eq_low_freq": {
           "description": "A/D input EQ low frequency, raw 0x04..=0x28.",
           "type": "integer",
           "format": "uint8",
-          "minimum": 0.0
+          "maximum": 40.0,
+          "minimum": 4.0
         },
         "ad_eq_low_gain": {
           "description": "A/D input EQ low gain, −12..=+12 dB.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 12.0,
+          "minimum": -12.0
         },
         "ad_eq_mid_freq": {
+          "description": "A/D input EQ mid frequency, raw 0x0E..=0x36.",
           "type": "integer",
           "format": "uint8",
-          "minimum": 0.0
+          "maximum": 54.0,
+          "minimum": 14.0
         },
         "ad_eq_mid_gain": {
+          "description": "A/D input EQ mid gain, −12..=+12 dB.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 12.0,
+          "minimum": -12.0
         },
         "ad_noise_gate_switch": {
+          "description": "A/D input noise gate on/off.",
           "type": "boolean"
         },
         "ad_noise_gate_threshold": {
           "description": "Noise-gate threshold, raw 0x36..=0x61 (−73 .. −30 dB).",
           "type": "integer",
           "format": "uint8",
-          "minimum": 0.0
+          "maximum": 97.0,
+          "minimum": 54.0
         },
         "ad_volume": {
+          "description": "A/D input channel volume, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "advanced_zone": {
+          "description": "Enables advanced zone settings for the external keyboard.",
           "type": "boolean"
         },
         "audio_trigger_key": {
-          "$ref": "#/definitions/AudioTriggerKey"
+          "description": "Which held key triggers the audio sample (lowest/highest).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/AudioTriggerKey"
+            }
+          ]
         },
         "audio_trigger_play_mode": {
-          "$ref": "#/definitions/AudioTriggerPlayMode"
+          "description": "Audio-trigger playback behaviour (OneShot, PlayStop, PlayPause, Hold).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/AudioTriggerPlayMode"
+            }
+          ]
         },
         "audio_trigger_switch": {
+          "description": "Audio-trigger sample playback on/off.",
           "type": "boolean"
         },
         "audio_trigger_volume": {
+          "description": "Audio-trigger sample volume, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "delay_depth": {
+          "description": "Master Delay depth (send/mix amount), 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "delay_switch": {
+          "description": "Master delay on/off.",
           "type": "boolean"
         },
         "delay_tempo_time": {
           "description": "Tempo-delay note value, raw 0..=14.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 14.0,
           "minimum": 0.0
         },
         "delay_time": {
+          "description": "Master Delay time, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "delay_type": {
-          "$ref": "#/definitions/DelayType"
+          "description": "Delay algorithm (Digital, Analog, Cross, Tempo).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/DelayType"
+            }
+          ]
         },
         "foot_pedal_1_assign": {
           "description": "Foot Pedal 1 assignment, raw 0..=120.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 120.0,
           "minimum": 0.0
         },
         "foot_pedal_1_limit_high": {
+          "description": "Foot Pedal 1 upper limit, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "foot_pedal_1_limit_low": {
+          "description": "Foot Pedal 1 lower limit, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "foot_pedal_2_assign": {
           "description": "Foot Pedal 2 assignment, raw 0..=120.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 120.0,
           "minimum": 0.0
         },
         "foot_pedal_2_limit_high": {
+          "description": "Foot Pedal 2 upper limit, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "foot_pedal_2_limit_low": {
+          "description": "Foot Pedal 2 lower limit, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "layer_split_mode": {
           "description": "Layer/split layout, raw 0..=3: 0=ABC, 1=A/BC, 2=AB/C, 3=A/B/C.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 3.0,
           "minimum": 0.0
         },
         "live_set_eq_mode": {
+          "description": "Enables the per-Live-Set 3-band EQ.",
           "type": "boolean"
         },
         "master_keyboard_mode": {
+          "description": "Enables Master Keyboard mode (external-zone control).",
           "type": "boolean"
         },
         "mod_wheel_assign": {
           "description": "Modulation wheel assignment, raw 0..=120 (control number; 120 = USB audio volume).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 120.0,
           "minimum": 0.0
         },
         "name": {
@@ -338,50 +404,70 @@
           }
         },
         "reverb_depth": {
+          "description": "Master Reverb depth (send/mix amount), 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "reverb_switch": {
+          "description": "Master reverb on/off.",
           "type": "boolean"
         },
         "reverb_type": {
-          "$ref": "#/definitions/ReverbType"
+          "description": "Reverb algorithm (Hall, Room, Plate).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ReverbType"
+            }
+          ]
         },
         "rotary_speed": {
-          "$ref": "#/definitions/RotarySpeed"
+          "description": "Rotary speaker speed (slow/fast).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/RotarySpeed"
+            }
+          ]
         },
         "rotary_stop": {
+          "description": "Stops the rotary speaker (brake).",
           "type": "boolean"
         },
         "sound_transpose": {
           "description": "Sound transpose, −12..=+12 semitones.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 12.0,
+          "minimum": -12.0
         },
         "split_point": {
           "description": "Split point (two-way split), raw 1..=127 (note number).",
           "type": "integer",
           "format": "uint8",
-          "minimum": 0.0
+          "maximum": 127.0,
+          "minimum": 1.0
         },
         "split_point_a_b": {
           "description": "Split point A–B (three-way), raw 1..=127.",
           "type": "integer",
           "format": "uint8",
-          "minimum": 0.0
+          "maximum": 127.0,
+          "minimum": 1.0
         },
         "split_point_b_c": {
           "description": "Split point B–C (three-way), raw 2..=127.",
           "type": "integer",
           "format": "uint8",
-          "minimum": 0.0
+          "maximum": 127.0,
+          "minimum": 2.0
         },
         "tempo_x10": {
           "description": "Tempo ×10 (e.g. `1200` = 120.0 BPM); raw range 420..=2400.",
           "type": "integer",
           "format": "uint16",
-          "minimum": 0.0
+          "maximum": 2400.0,
+          "minimum": 420.0
         }
       }
     },
@@ -398,32 +484,46 @@
       ],
       "properties": {
         "high_freq": {
+          "description": "High frequency, raw 0x1C..=0x3A.",
           "type": "integer",
           "format": "uint8",
-          "minimum": 0.0
+          "maximum": 58.0,
+          "minimum": 28.0
         },
         "high_gain": {
+          "description": "High gain, −12..=+12 dB.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 12.0,
+          "minimum": -12.0
         },
         "low_freq": {
+          "description": "Low frequency, raw 0x04..=0x28.",
           "type": "integer",
           "format": "uint8",
-          "minimum": 0.0
+          "maximum": 40.0,
+          "minimum": 4.0
         },
         "low_gain": {
           "description": "Low gain, −12..=+12 dB.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 12.0,
+          "minimum": -12.0
         },
         "mid_freq": {
+          "description": "Mid frequency, raw 0x0E..=0x36.",
           "type": "integer",
           "format": "uint8",
-          "minimum": 0.0
+          "maximum": 54.0,
+          "minimum": 14.0
         },
         "mid_gain": {
+          "description": "Mid gain, −12..=+12 dB.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 12.0,
+          "minimum": -12.0
         },
         "reserved": {
           "description": "Reserved/undocumented bytes captured verbatim so writes round-trip exactly.",
@@ -511,8 +611,10 @@
       ],
       "properties": {
         "amplifier_modulation_depth": {
+          "description": "Amplifier modulation depth, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "category_voices": {
@@ -528,6 +630,7 @@
           "description": "Active category, 0..=9 (indexes `category_voices`).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 9.0,
           "minimum": 0.0
         },
         "drawbars": {
@@ -540,169 +643,263 @@
           }
         },
         "drive_depth": {
+          "description": "Drive depth, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "drive_switch": {
+          "description": "Enables the drive/amp stage.",
           "type": "boolean"
         },
         "drive_type": {
-          "$ref": "#/definitions/DriveType"
+          "description": "Drive/amp model.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/DriveType"
+            }
+          ]
         },
         "effect_1_depth": {
+          "description": "Effect 1 depth, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "effect_1_rate": {
+          "description": "Effect 1 rate, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "effect_1_switch": {
+          "description": "Insert effect 1 on/off.",
           "type": "boolean"
         },
         "effect_1_type": {
           "description": "Effect 1 type, raw 0x00..=0x23.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 35.0,
           "minimum": 0.0
         },
         "effect_2_depth": {
+          "description": "Effect 2 depth, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "effect_2_rate": {
+          "description": "Effect 2 rate, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "effect_2_switch": {
+          "description": "Insert effect 2 on/off.",
           "type": "boolean"
         },
         "effect_2_type": {
           "description": "Effect 2 type, raw 0x00..=0x23.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 35.0,
           "minimum": 0.0
         },
         "effect_select": {
-          "$ref": "#/definitions/EffectSelect"
+          "description": "Which insert-effect slot this part edits (Effect1/Effect2).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/EffectSelect"
+            }
+          ]
         },
         "eg_attack": {
+          "description": "EG attack, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "eg_release": {
+          "description": "EG release, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "eg_switch": {
+          "description": "Enables the amplitude envelope generator.",
           "type": "boolean"
         },
         "external_keyboard": {
-          "$ref": "#/definitions/ExternalKeyboard"
+          "description": "External-keyboard routing (ExtInt, ExtOnly, Off).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ExternalKeyboard"
+            }
+          ]
         },
         "filter_cutoff": {
+          "description": "Filter cutoff, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "filter_modulation_depth": {
+          "description": "Filter modulation depth, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "filter_resonance": {
+          "description": "Filter resonance, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "filter_switch": {
+          "description": "Enables the filter.",
           "type": "boolean"
         },
         "modulation_speed": {
           "description": "Modulation speed, −64..=+63.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 63.0,
+          "minimum": -64.0
         },
         "mono_poly": {
-          "$ref": "#/definitions/MonoPoly"
+          "description": "Plays this part monophonically or polyphonically.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/MonoPoly"
+            }
+          ]
         },
         "mono_type": {
-          "$ref": "#/definitions/MonoType"
+          "description": "Mono/portamento behaviour (Normal, Fingered, Full-time).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/MonoType"
+            }
+          ]
         },
         "note_shift": {
           "description": "Note shift, −24..=+24 semitones.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 24.0,
+          "minimum": -24.0
         },
         "pan": {
           "description": "Stereo pan, −63..=+63 (L63 .. C .. R63). Added in CK firmware v1.10 (Part block offset 0x1C; device-verified by capture-and-diff).",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 63.0,
+          "minimum": -63.0
         },
         "part_color": {
           "description": "Part colour, 0..=11 (0=Red .. 11=Rose).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 11.0,
           "minimum": 0.0
         },
         "part_selected": {
+          "description": "Marks this part as the currently selected/edited part.",
           "type": "boolean"
         },
         "part_switch": {
+          "description": "Turns this part on or off.",
           "type": "boolean"
         },
         "part_volume": {
+          "description": "Part volume, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "percussion_decay": {
-          "$ref": "#/definitions/PercussionDecay"
+          "description": "Organ percussion decay (Slow or Fast).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/PercussionDecay"
+            }
+          ]
         },
         "percussion_switch": {
+          "description": "Enables organ percussion.",
           "type": "boolean"
         },
         "percussion_type": {
-          "$ref": "#/definitions/PercussionType"
+          "description": "Organ percussion harmonic (Third or Second).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/PercussionType"
+            }
+          ]
         },
         "percussion_volume": {
-          "$ref": "#/definitions/PercussionVolume"
+          "description": "Organ percussion volume (Normal or Soft).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/PercussionVolume"
+            }
+          ]
         },
         "pitch_bend_range": {
           "description": "Pitch bend range, −24..=+24 semitones.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 24.0,
+          "minimum": -24.0
         },
         "pitch_modulation_depth": {
+          "description": "Pitch modulation depth, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "portamento_mode": {
-          "$ref": "#/definitions/PortamentoMode"
+          "description": "Portamento time interpretation (Rate or Time).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/PortamentoMode"
+            }
+          ]
         },
         "portamento_time": {
+          "description": "Portamento time, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "receive_expression": {
+          "description": "This part responds to Expression (CC 11).",
           "type": "boolean"
         },
         "receive_soft": {
+          "description": "This part responds to the Soft pedal (CC 67).",
           "type": "boolean"
         },
         "receive_sostenuto": {
+          "description": "This part responds to the Sostenuto pedal (CC 66).",
           "type": "boolean"
         },
         "receive_sustain": {
+          "description": "This part responds to the Sustain pedal (CC 64).",
           "type": "boolean"
         },
         "reserved": {
@@ -713,36 +910,56 @@
           }
         },
         "touch_sensitivity_depth": {
+          "description": "Touch sensitivity depth, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "touch_sensitivity_offset": {
+          "description": "Touch sensitivity offset, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "unison_detune": {
+          "description": "Unison detune, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "unison_switch": {
+          "description": "Enables unison voicing.",
           "type": "boolean"
         },
         "unison_type": {
-          "$ref": "#/definitions/UnisonType"
+          "description": "Unison voicing (MultiLayer, Harmonics, SubHarmonics).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/UnisonType"
+            }
+          ]
         },
         "unison_volume": {
+          "description": "Unison volume, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "vibrato_chorus_switch": {
+          "description": "Enables the organ vibrato/chorus scanner.",
           "type": "boolean"
         },
         "vibrato_chorus_type": {
-          "$ref": "#/definitions/VibratoChorusType"
+          "description": "Vibrato/Chorus program (V1, C1, V2, C2, V3, C3).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/VibratoChorusType"
+            }
+          ]
         }
       }
     },
@@ -863,91 +1080,129 @@
           "description": "Rotary A balance (horn vs rotor), raw 0..=127 (R63>H .. R=H .. R<H63).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "a_horn_acceleration": {
+          "description": "Rotary A horn acceleration index (0.21–2.00).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "a_horn_deceleration": {
+          "description": "Rotary A horn deceleration index (0.21–2.00).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "a_horn_fast": {
+          "description": "Rotary A horn fast speed index (209.4–817.6 rpm).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "a_horn_slow": {
+          "description": "Rotary A horn slow speed index (23.0–89.6 rpm).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "a_rotor_acceleration": {
+          "description": "Rotary A rotor acceleration index (0.21–2.00).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "a_rotor_deceleration": {
+          "description": "Rotary A rotor deceleration index (0.21–2.00).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "a_rotor_fast": {
+          "description": "Rotary A rotor fast speed index (189.3–736.8 rpm).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "a_rotor_slow": {
+          "description": "Rotary A rotor slow speed index (22.7–88.3 rpm).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "a_stereo_mono": {
-          "$ref": "#/definitions/StereoMono"
+          "description": "Rotary A output: stereo or mono.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/StereoMono"
+            }
+          ]
         },
         "b_balance": {
           "description": "Rotary B balance, raw 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "b_horn_fast": {
+          "description": "Rotary B horn fast speed index (161.5–2382 rpm).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "b_horn_slow": {
+          "description": "Rotary B horn slow speed index (2.5–159.0 rpm).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "b_horn_transition": {
           "description": "Rotary B horn transition, 0..=127 (default 118).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "b_rotor_fast": {
+          "description": "Rotary B rotor fast speed index (161.5–2382 rpm).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "b_rotor_slow": {
+          "description": "Rotary B rotor slow speed index (2.5–159.0 rpm).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "b_rotor_transition": {
           "description": "Rotary B rotor transition, 0..=127 (default 116).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "b_stereo_mono": {
-          "$ref": "#/definitions/StereoMono"
+          "description": "Rotary B output: stereo or mono.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/StereoMono"
+            }
+          ]
         },
         "reserved": {
           "description": "Reserved/undocumented bytes captured verbatim so writes round-trip exactly.",
@@ -1018,41 +1273,49 @@
           "description": "MIDI bank select LSB, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "midi_bank_msb": {
           "description": "MIDI bank select MSB, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "midi_pan": {
           "description": "MIDI pan, −64..=+63 (L64 .. C .. R63).",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 63.0,
+          "minimum": -64.0
         },
         "midi_program": {
           "description": "MIDI program number, raw 0..=127 (program 1–128).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "midi_volume": {
           "description": "MIDI volume, 0..=127.",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "note_limit_high": {
           "description": "Note limit high, 0..=127 (C-2 .. G8).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "note_limit_low": {
           "description": "Note limit low, 0..=127 (C-2 .. G8).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 127.0,
           "minimum": 0.0
         },
         "reserved": {
@@ -1074,6 +1337,7 @@
           "description": "Transmit channel, raw `0..=0x0F` (= MIDI ch 1–16).",
           "type": "integer",
           "format": "uint8",
+          "maximum": 15.0,
           "minimum": 0.0
         },
         "transmit_controllers": {
@@ -1087,14 +1351,19 @@
         "transpose_octave": {
           "description": "Transpose (octave), −3..=+3.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 3.0,
+          "minimum": -3.0
         },
         "transpose_semitone": {
           "description": "Transpose (semitone), −11..=+11.",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "maximum": 11.0,
+          "minimum": -11.0
         },
         "zone_switch": {
+          "description": "Enables this Zone's MIDI transmission.",
           "type": "boolean"
         }
       }

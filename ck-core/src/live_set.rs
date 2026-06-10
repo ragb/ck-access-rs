@@ -55,65 +55,127 @@ byte_enum! {
 pub struct LiveSetCommon {
     /// Live Set name, up to 15 ASCII characters.
     pub name: String,
+    /// Enables the per-Live-Set 3-band EQ.
     pub live_set_eq_mode: bool,
+    /// Enables Master Keyboard mode (external-zone control).
     pub master_keyboard_mode: bool,
+    /// Enables advanced zone settings for the external keyboard.
     pub advanced_zone: bool,
     /// Tempo ×10 (e.g. `1200` = 120.0 BPM); raw range 420..=2400.
+    #[cfg_attr(feature = "schema", schemars(range(min = 420, max = 2400)))]
     pub tempo_x10: u16,
     /// Sound transpose, −12..=+12 semitones.
+    #[cfg_attr(feature = "schema", schemars(range(min = -12, max = 12)))]
     pub sound_transpose: i8,
     /// Layer/split layout, raw 0..=3: 0=ABC, 1=A/BC, 2=AB/C, 3=A/B/C.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 3)))]
     pub layer_split_mode: u8,
     /// Split point (two-way split), raw 1..=127 (note number).
+    #[cfg_attr(feature = "schema", schemars(range(min = 1, max = 127)))]
     pub split_point: u8,
     /// Split point A–B (three-way), raw 1..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 1, max = 127)))]
     pub split_point_a_b: u8,
     /// Split point B–C (three-way), raw 2..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 2, max = 127)))]
     pub split_point_b_c: u8,
     /// Modulation wheel assignment, raw 0..=120 (control number; 120 = USB audio volume).
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 120)))]
     pub mod_wheel_assign: u8,
     /// Foot Pedal 1 assignment, raw 0..=120.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 120)))]
     pub foot_pedal_1_assign: u8,
+    /// Foot Pedal 1 lower limit, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub foot_pedal_1_limit_low: u8,
+    /// Foot Pedal 1 upper limit, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub foot_pedal_1_limit_high: u8,
     /// Foot Pedal 2 assignment, raw 0..=120.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 120)))]
     pub foot_pedal_2_assign: u8,
+    /// Foot Pedal 2 lower limit, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub foot_pedal_2_limit_low: u8,
+    /// Foot Pedal 2 upper limit, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub foot_pedal_2_limit_high: u8,
+    /// Master delay on/off.
     pub delay_switch: bool,
+    /// Delay algorithm (Digital, Analog, Cross, Tempo).
     pub delay_type: DelayType,
+    /// Master Delay depth (send/mix amount), 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub delay_depth: u8,
+    /// Master Delay time, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub delay_time: u8,
     /// Tempo-delay note value, raw 0..=14.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 14)))]
     pub delay_tempo_time: u8,
+    /// Master reverb on/off.
     pub reverb_switch: bool,
+    /// Reverb algorithm (Hall, Room, Plate).
     pub reverb_type: ReverbType,
+    /// Master Reverb depth (send/mix amount), 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub reverb_depth: u8,
+    /// Rotary speaker speed (slow/fast).
     pub rotary_speed: RotarySpeed,
+    /// Stops the rotary speaker (brake).
     pub rotary_stop: bool,
+    /// Audio-trigger sample playback on/off.
     pub audio_trigger_switch: bool,
+    /// Audio-trigger sample volume, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub audio_trigger_volume: u8,
+    /// Which held key triggers the audio sample (lowest/highest).
     pub audio_trigger_key: AudioTriggerKey,
+    /// Audio-trigger playback behaviour (OneShot, PlayStop, PlayPause, Hold).
     pub audio_trigger_play_mode: AudioTriggerPlayMode,
     /// A/D input EQ low frequency, raw 0x04..=0x28.
+    #[cfg_attr(feature = "schema", schemars(range(min = 4, max = 40)))]
     pub ad_eq_low_freq: u8,
     /// A/D input EQ low gain, −12..=+12 dB.
+    #[cfg_attr(feature = "schema", schemars(range(min = -12, max = 12)))]
     pub ad_eq_low_gain: i8,
+    /// A/D input EQ mid frequency, raw 0x0E..=0x36.
+    #[cfg_attr(feature = "schema", schemars(range(min = 14, max = 54)))]
     pub ad_eq_mid_freq: u8,
+    /// A/D input EQ mid gain, −12..=+12 dB.
+    #[cfg_attr(feature = "schema", schemars(range(min = -12, max = 12)))]
     pub ad_eq_mid_gain: i8,
+    /// A/D input EQ high frequency, raw 0x1C..=0x3A.
+    #[cfg_attr(feature = "schema", schemars(range(min = 28, max = 58)))]
     pub ad_eq_high_freq: u8,
+    /// A/D input EQ high gain, −12..=+12 dB.
+    #[cfg_attr(feature = "schema", schemars(range(min = -12, max = 12)))]
     pub ad_eq_high_gain: i8,
+    /// A/D input noise gate on/off.
     pub ad_noise_gate_switch: bool,
     /// Noise-gate threshold, raw 0x36..=0x61 (−73 .. −30 dB).
+    #[cfg_attr(feature = "schema", schemars(range(min = 54, max = 97)))]
     pub ad_noise_gate_threshold: u8,
     /// A/D effect 1 type, raw 0x00..=0x22.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 34)))]
     pub ad_effect_1_type: u8,
+    /// A/D effect 1 depth, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub ad_effect_1_depth: u8,
+    /// A/D effect 1 rate, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub ad_effect_1_rate: u8,
     /// A/D effect 2 type, raw 0x00..=0x22.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 34)))]
     pub ad_effect_2_type: u8,
+    /// A/D effect 2 depth, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub ad_effect_2_depth: u8,
+    /// A/D effect 2 rate, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub ad_effect_2_rate: u8,
+    /// A/D input channel volume, 0..=127.
+    #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]
     pub ad_volume: u8,
     /// Reserved/undocumented bytes captured verbatim so writes round-trip exactly.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -274,11 +336,22 @@ impl LiveSetCommon {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LiveSetEq {
     /// Low gain, −12..=+12 dB.
+    #[cfg_attr(feature = "schema", schemars(range(min = -12, max = 12)))]
     pub low_gain: i8,
+    /// Low frequency, raw 0x04..=0x28.
+    #[cfg_attr(feature = "schema", schemars(range(min = 4, max = 40)))]
     pub low_freq: u8,
+    /// Mid gain, −12..=+12 dB.
+    #[cfg_attr(feature = "schema", schemars(range(min = -12, max = 12)))]
     pub mid_gain: i8,
+    /// Mid frequency, raw 0x0E..=0x36.
+    #[cfg_attr(feature = "schema", schemars(range(min = 14, max = 54)))]
     pub mid_freq: u8,
+    /// High gain, −12..=+12 dB.
+    #[cfg_attr(feature = "schema", schemars(range(min = -12, max = 12)))]
     pub high_gain: i8,
+    /// High frequency, raw 0x1C..=0x3A.
+    #[cfg_attr(feature = "schema", schemars(range(min = 28, max = 58)))]
     pub high_freq: u8,
     /// Reserved/undocumented bytes captured verbatim so writes round-trip exactly.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
