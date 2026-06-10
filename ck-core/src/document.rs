@@ -14,7 +14,7 @@
 //! crate doesn't model (Soundmondo version, firmware-specific blocks) verbatim
 //! in [`LiveSet::extra_blocks`] so a dumped patch re-syncs byte-exact.
 
-use serde::{Deserialize, Serialize};
+use serde::{de, Deserialize, Deserializer, Serialize};
 
 use crate::address::{
     AUDIO_TRIGGER_PATH_BASE, LIVE_SET_COMMON_BASE, LIVE_SET_EQ_BASE, ROTARY_BASE, ZONE_COUNT,
@@ -63,9 +63,13 @@ pub struct LiveSet {
     /// Path to the audio-trigger sample file (may be empty).
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub audio_trigger_path: String,
-    /// The four Zones (master-keyboard transmit configs).
+    /// The four Zones (master-keyboard transmit configs). A preset may supply
+    /// fewer; missing trailing slots are padded from the factory default.
+    #[serde(deserialize_with = "deser_zones")]
     pub zones: Vec<Zone>,
-    /// The three Parts (A, B, C).
+    /// The three Parts (A, B, C). A preset may supply fewer; missing trailing
+    /// slots are padded from the factory default.
+    #[serde(deserialize_with = "deser_parts")]
     pub parts: Vec<Part>,
     /// Rotary Speaker settings (firmware v1.10+). `None` on firmware that doesn't
     /// emit the `46 20 00` block.
@@ -83,32 +87,67 @@ impl Default for LiveSet {
     /// (Part A enabled+selected; per-slot colours). Edit-then-merge over this to
     /// build a preset without specifying every field.
     fn default() -> Self {
-        let zones = (0..Self::ZONES as u8)
-            .map(|i| Zone {
-                zone_switch: i == 0,
-                transmit_channel: i,
-                ..Zone::default()
-            })
-            .collect();
-        let colors = [0x02u8, 0x08, 0x04];
-        let parts = (0..Self::PARTS)
-            .map(|i| Part {
-                part_switch: i == 0,
-                part_selected: i == 0,
-                part_color: colors[i],
-                ..Part::default()
-            })
-            .collect();
         Self {
             common: LiveSetCommon::default(),
             eq: LiveSetEq::default(),
             audio_trigger_path: String::new(),
-            zones,
-            parts,
+            zones: (0..Self::ZONES).map(factory_zone).collect(),
+            parts: (0..Self::PARTS).map(factory_part).collect(),
             rotary: Some(RotarySpeaker::default()),
             extra_blocks: Vec::new(),
         }
     }
+}
+
+/// Factory default for one Zone slot (Zone 1 enabled; ascending transmit
+/// channels). Shared by [`LiveSet::default`] and the padding deserializer.
+fn factory_zone(i: usize) -> Zone {
+    Zone {
+        zone_switch: i == 0,
+        transmit_channel: i as u8,
+        ..Zone::default()
+    }
+}
+
+/// Factory default for one Part slot (Part A enabled+selected; per-slot colours).
+/// Shared by [`LiveSet::default`] and the padding deserializer.
+fn factory_part(i: usize) -> Part {
+    const COLORS: [u8; LiveSet::PARTS] = [0x02, 0x08, 0x04];
+    Part {
+        part_switch: i == 0,
+        part_selected: i == 0,
+        part_color: COLORS.get(i).copied().unwrap_or(0),
+        ..Part::default()
+    }
+}
+
+/// Deserialize `zones`, padding a too-short array to [`LiveSet::ZONES`] with
+/// factory slots so a partial preset still yields a complete, encodable patch.
+fn deser_zones<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<Zone>, D::Error> {
+    let mut v = Vec::<Zone>::deserialize(d)?;
+    if v.len() > LiveSet::ZONES {
+        return Err(de::Error::custom(format!(
+            "at most {} zones, got {}",
+            LiveSet::ZONES,
+            v.len()
+        )));
+    }
+    v.extend((v.len()..LiveSet::ZONES).map(factory_zone));
+    Ok(v)
+}
+
+/// Deserialize `parts`, padding a too-short array to [`LiveSet::PARTS`].
+fn deser_parts<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<Part>, D::Error> {
+    let mut v = Vec::<Part>::deserialize(d)?;
+    if v.len() > LiveSet::PARTS {
+        return Err(de::Error::custom(format!(
+            "at most {} parts, got {}",
+            LiveSet::PARTS,
+            v.len()
+        )));
+    }
+    v.extend((v.len()..LiveSet::PARTS).map(factory_part));
+    Ok(v)
 }
 
 impl LiveSet {
@@ -236,9 +275,9 @@ mod tests {
 
     #[test]
     fn partial_yaml_merges_over_defaults() {
-        // Sparse Live Set: only a name and one part's cutoff; the rest fills
-        // from the factory default.
-        let yaml = "common:\n  name: My Patch\nparts:\n- filter_cutoff: 100\n- {}\n- {}\nzones: [{}, {}, {}, {}]\n";
+        // Sparse Live Set: only a name and one part's cutoff. The single part is
+        // padded to the full count and the rest fills from the factory default.
+        let yaml = "common:\n  name: My Patch\nparts:\n- filter_cutoff: 100\n";
         let ls: LiveSet = serde_yaml::from_str(yaml).unwrap();
         assert_eq!(ls.common.name, "My Patch");
         assert_eq!(ls.common.reverb_depth, 0x14); // from default
@@ -246,6 +285,38 @@ mod tests {
         assert_eq!(ls.parts[0].filter_resonance, 0x40); // from default
         assert!(ls.parts[0].filter_switch); // from default
         ls.to_blocks().unwrap();
+    }
+
+    #[test]
+    fn short_arrays_pad_to_full_count() {
+        // One part, two zones supplied → padded to PARTS / ZONES with factory
+        // slots, then fully encodable.
+        let yaml = "parts:\n- {}\nzones:\n- {}\n- {}\n";
+        let ls: LiveSet = serde_yaml::from_str(yaml).unwrap();
+        assert_eq!(ls.parts.len(), LiveSet::PARTS);
+        assert_eq!(ls.zones.len(), LiveSet::ZONES);
+        // Padded (unmentioned) slots get factory per-slot defaults.
+        assert_eq!(ls.parts[1].part_color, 0x08);
+        assert_eq!(ls.parts[2].part_color, 0x04);
+        assert!(!ls.parts[2].part_switch);
+        assert_eq!(ls.zones[2].transmit_channel, 2); // padded slot
+        assert_eq!(ls.zones[3].transmit_channel, 3);
+        assert!(!ls.zones[3].zone_switch);
+        ls.to_blocks().unwrap();
+    }
+
+    #[test]
+    fn empty_arrays_pad_to_full_count() {
+        let ls: LiveSet = serde_yaml::from_str("parts: []\nzones: []\n").unwrap();
+        assert_eq!(ls.parts.len(), LiveSet::PARTS);
+        assert_eq!(ls.zones.len(), LiveSet::ZONES);
+        ls.to_blocks().unwrap();
+    }
+
+    #[test]
+    fn too_many_parts_is_rejected() {
+        let err = serde_yaml::from_str::<LiveSet>("parts: [{}, {}, {}, {}]\n");
+        assert!(err.is_err());
     }
 
     #[test]

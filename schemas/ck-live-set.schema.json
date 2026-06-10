@@ -86,7 +86,7 @@
       }
     },
     "parts": {
-      "description": "The three Parts (A, B, C).",
+      "description": "The three Parts (A, B, C). A preset may supply fewer; missing trailing slots are padded from the factory default.",
       "default": [
         {
           "amplifier_modulation_depth": 0,
@@ -334,7 +334,7 @@
       ]
     },
     "zones": {
-      "description": "The four Zones (master-keyboard transmit configs).",
+      "description": "The four Zones (master-keyboard transmit configs). A preset may supply fewer; missing trailing slots are padded from the factory default.",
       "default": [
         {
           "midi_bank_lsb": 0,
