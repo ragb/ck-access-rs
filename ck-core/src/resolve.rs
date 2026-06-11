@@ -1,16 +1,17 @@
 //! Name ↔ value resolution for catalog-backed fields.
 //!
-//! Editor-/LLM-authored presets are friendlier in names ("Hall Reverb",
-//! "78Rd", "2.0 kHz") than raw indices. The canonical typed model stays numeric
-//! (so the editor and byte codec are unaffected); this module is a translation
-//! layer that turns names into numbers on the way in. Which fields are
-//! catalog-backed — and which catalog — is declared by [`crate::params`]'s
-//! `catalog` hint, so this stays in sync with the field metadata.
-
-use serde_yaml::Value;
+//! Editor-/LLM-authored presets are friendlier in names ("Hall Reverb", "78Rd",
+//! "2.0 kHz") than raw indices. The canonical typed model stays numeric (so the
+//! editor and byte codec are unaffected); this module is a translation layer that
+//! turns names into numbers on the way in.
+//!
+//! The CK value lookups ([`resolve_name`] / [`label_value`]) live here and back
+//! the device's [`crate::catalog::CkCatalogs`]; the document *walk* (which fields
+//! are catalog-backed, and descending the YAML) is the shared, generic one in
+//! `midi_access_core::resolve`, driven by [`crate::params`]'s `catalog` hints.
 
 use crate::codec::CodecError;
-use crate::{cc, effects, eq, params, voices};
+use crate::{cc, effects, eq, voices};
 
 /// Resolve a value *name* in a named catalog to its numeric value.
 ///
@@ -59,70 +60,38 @@ pub fn label_value(catalog: &str, value: i64) -> Option<String> {
     }
 }
 
-/// Replace a string value (or each string in a sequence — for `category_voices`)
-/// with its resolved number. Numbers and unknown names are left untouched.
-fn resolve_value(v: &mut Value, catalog: &str) {
-    match v {
-        Value::String(s) => {
-            if let Some(n) = resolve_name(catalog, s) {
-                *v = Value::Number(n.into());
-            }
-        }
-        Value::Sequence(seq) => {
-            for e in seq.iter_mut() {
-                resolve_value(e, catalog);
-            }
-        }
-        _ => {}
-    }
-}
-
-/// Resolve every catalog-backed field of one area object (`area` = e.g.
-/// `"live_set.part"`).
-fn resolve_obj(obj: Option<&mut Value>, area: &str) {
-    let Some(Value::Mapping(map)) = obj else {
-        return;
-    };
-    for (k, v) in map.iter_mut() {
-        if let Some(key) = k.as_str() {
-            if let Some(meta) = params::field_meta(&format!("{area}.{key}")) {
-                if let Some(catalog) = meta.catalog {
-                    resolve_value(v, catalog);
-                }
-            }
-        }
-    }
-}
-
-/// Resolve each element of an array of area objects (zones, parts).
-fn resolve_seq(obj: Option<&mut Value>, area: &str) {
-    if let Some(Value::Sequence(seq)) = obj {
-        for item in seq.iter_mut() {
-            resolve_obj(Some(item), area);
-        }
-    }
-}
+/// The catalog names this device exposes for name resolution.
+pub const CATALOG_NAMES: &[&str] = &[
+    "voices",
+    "part_effects",
+    "ad_effects",
+    "eq_freq",
+    "assign_target",
+];
 
 /// Convert any name strings in a (possibly partial) **Live Set** document to
 /// their numeric values, returning normalized YAML ready for the codec. Accepts
 /// YAML or JSON input (YAML is a superset). Numbers pass through unchanged.
 pub fn resolve_names_live_set(input: &str) -> Result<String, CodecError> {
-    let mut v: Value = serde_yaml::from_str(input).map_err(|e| CodecError::Yaml(e.to_string()))?;
-    resolve_obj(v.get_mut("common"), "live_set.common");
-    resolve_obj(v.get_mut("eq"), "live_set.eq");
-    resolve_obj(v.get_mut("rotary"), "live_set.rotary");
-    resolve_seq(v.get_mut("zones"), "live_set.zone");
-    resolve_seq(v.get_mut("parts"), "live_set.part");
-    serde_yaml::to_string(&v).map_err(|e| CodecError::Yaml(e.to_string()))
+    resolve_doc(input)
 }
 
 /// Convert any name strings in a (possibly partial) **System** document to their
 /// numeric values, returning normalized YAML.
 pub fn resolve_names_system(input: &str) -> Result<String, CodecError> {
-    let mut v: Value = serde_yaml::from_str(input).map_err(|e| CodecError::Yaml(e.to_string()))?;
-    resolve_obj(v.get_mut("common"), "system.common");
-    resolve_obj(v.get_mut("master_eq"), "system.master_eq");
-    serde_yaml::to_string(&v).map_err(|e| CodecError::Yaml(e.to_string()))
+    resolve_doc(input)
+}
+
+/// Both documents resolve through the same generic walk: it rewrites every
+/// catalog-hinted field wherever it appears, so System and Live Set need no
+/// per-area handling.
+fn resolve_doc(input: &str) -> Result<String, CodecError> {
+    midi_access_core::resolve_names_str(
+        input,
+        crate::params::params(),
+        &crate::catalog::CK_CATALOGS,
+    )
+    .map_err(|e| CodecError::Yaml(e.to_string()))
 }
 
 #[cfg(test)]

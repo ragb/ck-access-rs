@@ -14,7 +14,9 @@
 //! crate doesn't model (Soundmondo version, firmware-specific blocks) verbatim
 //! in [`LiveSet::extra_blocks`] so a dumped patch re-syncs byte-exact.
 
-use serde::{de, Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
+
+use midi_access_core::merge::slots;
 
 use crate::address::{
     AUDIO_TRIGGER_PATH_BASE, LIVE_SET_COMMON_BASE, LIVE_SET_EQ_BASE, ROTARY_BASE, ZONE_COUNT,
@@ -121,60 +123,6 @@ fn factory_part(i: usize) -> Part {
         part_color: COLORS.get(i).copied().unwrap_or(0),
         ..Part::default()
     }
-}
-
-/// Deep-merge `overlay` onto `base`: mapping keys present in `overlay` win
-/// (recursing into nested mappings); every other value replaces `base` wholesale
-/// (so a supplied array like `category_voices` overrides, never element-merges).
-fn merge_over(base: serde_yaml::Value, overlay: serde_yaml::Value) -> serde_yaml::Value {
-    use serde_yaml::Value::Mapping;
-    match (base, overlay) {
-        (Mapping(mut b), Mapping(o)) => {
-            for (k, ov) in o {
-                let merged = match b.remove(&k) {
-                    Some(bv) => merge_over(bv, ov),
-                    None => ov,
-                };
-                b.insert(k, merged);
-            }
-            Mapping(b)
-        }
-        (_, overlay) => overlay,
-    }
-}
-
-/// Build the canonical-count vector for one area: each slot `i` is the supplied
-/// element (if any) merged over `factory(i)`, and missing trailing slots are the
-/// bare factory slot. So a partial preset need only name the slots — and the
-/// fields within them — that it changes; everything else fills from the factory
-/// default for *that* slot. Rejects more elements than `count`.
-fn slots<'de, D, T>(
-    d: D,
-    count: usize,
-    label: &str,
-    factory: impl Fn(usize) -> T,
-) -> Result<Vec<T>, D::Error>
-where
-    D: Deserializer<'de>,
-    T: Serialize + serde::de::DeserializeOwned,
-{
-    let raw = Vec::<serde_yaml::Value>::deserialize(d)?;
-    if raw.len() > count {
-        return Err(de::Error::custom(format!(
-            "at most {count} {label}, got {}",
-            raw.len()
-        )));
-    }
-    (0..count)
-        .map(|i| {
-            let base = serde_yaml::to_value(factory(i)).map_err(de::Error::custom)?;
-            let v = match raw.get(i) {
-                Some(overlay) => merge_over(base, overlay.clone()),
-                None => base,
-            };
-            serde_yaml::from_value(v).map_err(de::Error::custom)
-        })
-        .collect()
 }
 
 /// Deserialize `zones`: per-slot merge over [`factory_zone`], padded to

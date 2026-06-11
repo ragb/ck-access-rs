@@ -18,33 +18,10 @@
 //! the rustdoc→JSDoc in the `.d.ts` is compile-time only and unreadable from
 //! running JS.
 
-use serde::Serialize;
-
-/// Metadata for one editable field.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
-pub struct ParamMeta {
-    /// Fully-qualified path; see the module-level scheme.
-    pub path: &'static str,
-    /// Accessible label, e.g. `"Master tune"`.
-    pub label: &'static str,
-    /// Display group / fieldset legend, e.g. `"Delay"`.
-    pub group: &'static str,
-    /// Tooltip / screen-reader body.
-    pub help: &'static str,
-    /// True for a `0..N` magnitude the editor may show as a percentage
-    /// (cutoff, depth, volume…); false for signed / centred / enum / index / bool.
-    #[serde(default, skip_serializing_if = "is_false")]
-    pub level: bool,
-    /// Which lookup catalog this field's raw value maps to, if any:
-    /// `"voices"`, `"part_effects"`, `"ad_effects"`, `"eq_freq"`, or
-    /// `"assign_target"`. Drives name↔number resolution (see [`crate::resolve`]).
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub catalog: Option<&'static str>,
-}
-
-fn is_false(b: &bool) -> bool {
-    !*b
-}
+// The field-metadata *type* now lives in the shared kit (`midi_access_core`);
+// this module keeps the CK-specific data table and lookups. Re-exported for
+// stability so `ck_core::ParamMeta` and `ck_core::params::ParamMeta` still work.
+pub use midi_access_core::meta::{Level, ParamMeta, Params};
 
 const fn p(
     path: &'static str,
@@ -57,12 +34,13 @@ const fn p(
         label,
         group,
         help,
-        level: false,
+        level: Level::Plain,
+        kind: None,
         catalog: None,
     }
 }
 
-/// Same as [`p`] but flags the field as a `0..N` magnitude (`level = true`).
+/// Same as [`p`] but flags the field as a `0..N` magnitude.
 const fn pl(
     path: &'static str,
     label: &'static str,
@@ -74,7 +52,8 @@ const fn pl(
         label,
         group,
         help,
-        level: true,
+        level: Level::Magnitude,
+        kind: None,
         catalog: None,
     }
 }
@@ -92,7 +71,8 @@ const fn pc(
         label,
         group,
         help,
-        level: false,
+        level: Level::Plain,
+        kind: None,
         catalog: Some(catalog),
     }
 }
@@ -297,6 +277,12 @@ pub static PARAMS: &[ParamMeta] = &[
     pl("live_set.part.effect_2_rate", "Effect 2 rate", "Insert effects", "Rate of insert effect 2 (0–127)."),
 ];
 
+/// The CK parameter table as a [`Params`] handle (for the shared resolver / the
+/// [`Device`](crate::Device) contract).
+pub fn params() -> Params {
+    Params(PARAMS)
+}
+
 /// Help text for a field path, or `None` if the path isn't in the catalog.
 pub fn field_help(path: &str) -> Option<&'static str> {
     field_meta(path).map(|m| m.help)
@@ -351,9 +337,18 @@ mod tests {
 
     #[test]
     fn level_flag_only_on_magnitudes() {
-        assert!(field_meta("live_set.part.filter_cutoff").unwrap().level);
-        assert!(!field_meta("live_set.part.pan").unwrap().level); // centred, not a magnitude
-        assert!(!field_meta("system.master_eq.low_gain").unwrap().level); // signed
+        use midi_access_core::meta::Level;
+        assert_eq!(
+            field_meta("live_set.part.filter_cutoff").unwrap().level,
+            Level::Magnitude
+        );
+        // centred, not a magnitude
+        assert_eq!(field_meta("live_set.part.pan").unwrap().level, Level::Plain);
+        // signed
+        assert_eq!(
+            field_meta("system.master_eq.low_gain").unwrap().level,
+            Level::Plain
+        );
     }
 
     /// Cross-check: every editable field of each typed struct has a catalog
