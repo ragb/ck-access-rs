@@ -54,7 +54,6 @@ pub fn balance_label(byte: u8) -> String {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
 pub struct RotarySpeaker {
     /// Rotary A balance (horn vs rotor), raw 0..=127 (R63>H .. R=H .. R<H63).
     #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 127)))]

@@ -5,8 +5,10 @@
 //! `Uint8Array`s ready to hand to the Web MIDI API.
 
 use ck_core::address::{
-    zone_base_address, Part as PartSlot, AUDIO_TRIGGER_PATH_BASE, BULK_FOOTER_BASE,
-    BULK_HEADER_BASE, LIVE_SET_COMMON_BASE, LIVE_SET_EQ_BASE, MASTER_EQ_BASE, SYSTEM_COMMON_BASE,
+    bulk_footer_for_slot, bulk_header_for_slot, zone_base_address, Part as PartSlot,
+    AUDIO_TRIGGER_PATH_BASE, BULK_FOOTER_CURRENT_BUFFER, BULK_HEADER_CURRENT_BUFFER,
+    LIVE_SET_COMMON_BASE, LIVE_SET_EQ_BASE, MASTER_EQ_BASE, STORE_TO_FLASH_BASE,
+    SYSTEM_COMMON_BASE,
 };
 use ck_core::cc;
 use ck_core::effects;
@@ -632,14 +634,51 @@ pub fn part_base(index: u8) -> Result<Vec<u8>, JsError> {
         .ok_or_else(|| JsError::new("part index out of range (0..=2)"))
 }
 
-#[wasm_bindgen(js_name = bulkHeaderBase)]
-pub fn bulk_header_base() -> Vec<u8> {
-    BULK_HEADER_BASE.to_vec()
+/// Bulk Header for the CK's volatile edit buffer (`0E 7F 00`). Bracket a
+/// `bulkDump` sequence with this header + `bulkFooterCurrentBuffer` to push
+/// the editor's Live Set into the CK's audible state without persisting.
+#[wasm_bindgen(js_name = bulkHeaderCurrentBuffer)]
+pub fn bulk_header_current_buffer() -> Vec<u8> {
+    BULK_HEADER_CURRENT_BUFFER.to_vec()
 }
 
-#[wasm_bindgen(js_name = bulkFooterBase)]
-pub fn bulk_footer_base() -> Vec<u8> {
-    BULK_FOOTER_BASE.to_vec()
+/// Bulk Footer for the volatile edit buffer (`0F 7F 00`). Pairs with
+/// [`bulk_header_current_buffer`].
+#[wasm_bindgen(js_name = bulkFooterCurrentBuffer)]
+pub fn bulk_footer_current_buffer() -> Vec<u8> {
+    BULK_FOOTER_CURRENT_BUFFER.to_vec()
+}
+
+/// Bulk Header that targets a stored User Live Set Sound slot
+/// (`0E (page-1) (sound-1)`). Bracket a `bulkDump` sequence with this
+/// header + `bulkFooterForSlot` to write the Live Set into non-volatile
+/// memory — the editor-side equivalent of pressing Store on the panel.
+///
+/// `page` and `sound` are 1-based (1..=20 and 1..=8) to match the CK's
+/// display; returns an error if either is out of range.
+#[wasm_bindgen(js_name = bulkHeaderForSlot)]
+pub fn bulk_header_for_slot_wasm(page: u8, sound: u8) -> Result<Vec<u8>, JsError> {
+    bulk_header_for_slot(page, sound)
+        .map(|a| a.to_vec())
+        .ok_or_else(|| JsError::new("page must be 1..=20 and sound must be 1..=8"))
+}
+
+/// Bulk Footer that closes a slot-targeted bulk dump
+/// (`0F (page-1) (sound-1)`). Pairs with [`bulk_header_for_slot_wasm`].
+#[wasm_bindgen(js_name = bulkFooterForSlot)]
+pub fn bulk_footer_for_slot_wasm(page: u8, sound: u8) -> Result<Vec<u8>, JsError> {
+    bulk_footer_for_slot(page, sound)
+        .map(|a| a.to_vec())
+        .ok_or_else(|| JsError::new("page must be 1..=20 and sound must be 1..=8"))
+}
+
+/// Address of the STORE TO FLASH parameter (`0D 00 00`). Listed in the
+/// Owner's Manual's Parameter Base Address table but with no documented
+/// data range — exposed here as a future hook; the saving path the editor
+/// uses goes through the slot-addressed bulk dump (`bulkHeaderForSlot`).
+#[wasm_bindgen(js_name = storeToFlashBase)]
+pub fn store_to_flash_base() -> Vec<u8> {
+    STORE_TO_FLASH_BASE.to_vec()
 }
 
 // === Live Set selection (Bank Select + Program Change) ===

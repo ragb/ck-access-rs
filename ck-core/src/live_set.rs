@@ -52,7 +52,6 @@ byte_enum! {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
 pub struct LiveSetCommon {
     /// Live Set name, up to 15 ASCII characters.
     pub name: String,
@@ -390,7 +389,6 @@ impl LiveSetCommon {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
 pub struct LiveSetEq {
     /// Low gain, −12..=+12 dB.
     #[cfg_attr(feature = "schema", schemars(range(min = -12, max = 12)))]

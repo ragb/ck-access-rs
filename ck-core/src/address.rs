@@ -2,15 +2,17 @@
 //!
 //! Group Number `7F 1C`, Model ID `0B`. Addresses are 3 bytes (High, Mid, Low).
 //! From the *Owner's Manual* "Parameter Base Address" and "Bulk Dump Block"
-//! tables:
+//! tables (pp. 56–59):
 //!
 //! | Block                | High | Mid  | Low | Bytes |
 //! |----------------------|------|------|-----|-------|
 //! | System Common        | `20` | `00` | `00`| 56    |
 //! | System Master EQ     | `20` | `40` | `00`| 20    |
 //! | Soundmondo Version   | `00` | `7F` | `00`| 4     |
-//! | Bulk Header          | `0E` | `pp` | `0n`| —     |
-//! | Bulk Footer          | `0F` | `pp` | `0n`| —     |
+//! | Bulk Header (slot)   | `0E` | `pp` | `0n`| —     |
+//! | Bulk Header (buffer) | `0E` | `7F` | `00`| —     |
+//! | Bulk Footer (slot)   | `0F` | `pp` | `0n`| —     |
+//! | Bulk Footer (buffer) | `0F` | `7F` | `00`| —     |
 //! | Store To Flash       | `0D` | `00` | `00`| —     |
 //! | Live Set Common      | `46` | `00` | `00`| 83    |
 //! | Live Set EQ          | `46` | `40` | `00`| 20    |
@@ -18,25 +20,71 @@
 //! | Zone (zz = 00..=03)  | `4A` | `zz` | `00`| 16    |
 //! | Live Set Part (p)    | `50` | `0p` | `00`| 105   |
 //!
-//! For Bulk Header/Footer, `pp` = Live Set Sound user page (0..=19) and
-//! `0n` = part/section selector; both are 0 when addressing the *current* edit
-//! buffer.
+//! Bulk Header / Footer addresses come in two variants. The `pp`/`0n` form
+//! brackets a bulk dump targeting a stored User Live Set Sound slot
+//! (`pp` = page 0..=19, `n` = sound 0..=7) — the dump lands in non-volatile
+//! memory, surviving a power cycle. The `7F 00` form brackets a dump
+//! targeting the volatile edit buffer (whichever slot the CK is currently
+//! playing). The first is "Save" / "Save as…", the second is "send to edit
+//! buffer".
 
 /// Number of Zones in a Live Set (`zz` = 0..=3).
 pub const ZONE_COUNT: u8 = 4;
+
+/// Number of Live Set Sound pages on the CK (User 1..=20).
+pub const LIVE_SET_PAGE_COUNT: u8 = 20;
+/// Live Set Sounds per page (1..=8).
+pub const LIVE_SET_SOUNDS_PER_PAGE: u8 = 8;
 
 // Block base addresses (current edit buffer).
 pub const SYSTEM_COMMON_BASE: [u8; 3] = [0x20, 0x00, 0x00];
 pub const MASTER_EQ_BASE: [u8; 3] = [0x20, 0x40, 0x00];
 pub const SOUNDMONDO_VERSION_BASE: [u8; 3] = [0x00, 0x7F, 0x00];
 pub const STORE_TO_FLASH_BASE: [u8; 3] = [0x0D, 0x00, 0x00];
-pub const BULK_HEADER_BASE: [u8; 3] = [0x0E, 0x00, 0x00];
-pub const BULK_FOOTER_BASE: [u8; 3] = [0x0F, 0x00, 0x00];
+
+/// Bulk Header for the volatile edit buffer (whichever Live Set Sound the
+/// CK is currently playing). Use this to bracket `sendLiveSet`-style pushes
+/// that update the audible state without persisting to storage.
+pub const BULK_HEADER_CURRENT_BUFFER: [u8; 3] = [0x0E, 0x7F, 0x00];
+/// Bulk Footer for the volatile edit buffer. Pairs with
+/// [`BULK_HEADER_CURRENT_BUFFER`].
+pub const BULK_FOOTER_CURRENT_BUFFER: [u8; 3] = [0x0F, 0x7F, 0x00];
+
 pub const LIVE_SET_COMMON_BASE: [u8; 3] = [0x46, 0x00, 0x00];
 pub const LIVE_SET_EQ_BASE: [u8; 3] = [0x46, 0x40, 0x00];
 pub const AUDIO_TRIGGER_PATH_BASE: [u8; 3] = [0x46, 0x10, 0x00];
 /// Rotary Speaker block, added in firmware v1.10.
 pub const ROTARY_BASE: [u8; 3] = [0x46, 0x20, 0x00];
+
+/// Bulk Header that targets a stored User Live Set Sound slot. The dump
+/// bracketed by this header (and the matching [`bulk_footer_for_slot`])
+/// writes straight to non-volatile memory — the editor-side equivalent of
+/// pressing Store on the panel and picking a destination.
+///
+/// `page` and `sound` are 1-based to match the CK's display
+/// (1..=`LIVE_SET_PAGE_COUNT`, 1..=`LIVE_SET_SOUNDS_PER_PAGE`).
+/// Returns `None` if either is out of range.
+pub fn bulk_header_for_slot(page: u8, sound: u8) -> Option<[u8; 3]> {
+    if page == 0 || page > LIVE_SET_PAGE_COUNT {
+        return None;
+    }
+    if sound == 0 || sound > LIVE_SET_SOUNDS_PER_PAGE {
+        return None;
+    }
+    Some([0x0E, page - 1, sound - 1])
+}
+
+/// Bulk Footer that closes a slot-targeted bulk dump. Pairs with
+/// [`bulk_header_for_slot`]; same range rules.
+pub fn bulk_footer_for_slot(page: u8, sound: u8) -> Option<[u8; 3]> {
+    if page == 0 || page > LIVE_SET_PAGE_COUNT {
+        return None;
+    }
+    if sound == 0 || sound > LIVE_SET_SOUNDS_PER_PAGE {
+        return None;
+    }
+    Some([0x0F, page - 1, sound - 1])
+}
 
 // Documented block byte counts (firmware v1.0). Newer firmware may append
 // parameters; decoders accept longer payloads (see each area's `from_bytes`).
@@ -169,5 +217,30 @@ mod tests {
             AddressSpace::classify([0x77, 0x00, 0x00]),
             AddressSpace::Unknown
         );
+    }
+
+    #[test]
+    fn edit_buffer_brackets_match_spec() {
+        // Manual p.59 documents the current-buffer addresses as `0E 7F 00`
+        // and `0F 7F 00`. Reading or writing the edit buffer must use these,
+        // NOT `0E 00 00` / `0F 00 00` (which would target User Live Set 1-1).
+        assert_eq!(BULK_HEADER_CURRENT_BUFFER, [0x0E, 0x7F, 0x00]);
+        assert_eq!(BULK_FOOTER_CURRENT_BUFFER, [0x0F, 0x7F, 0x00]);
+    }
+
+    #[test]
+    fn slot_brackets_match_spec() {
+        // Page 1, Sound 1 → `0E 00 00` / `0F 00 00` (the first User slot).
+        assert_eq!(bulk_header_for_slot(1, 1), Some([0x0E, 0x00, 0x00]));
+        assert_eq!(bulk_footer_for_slot(1, 1), Some([0x0F, 0x00, 0x00]));
+        // Page 20, Sound 8 → `0E 13 07` / `0F 13 07` (the last User slot).
+        assert_eq!(bulk_header_for_slot(20, 8), Some([0x0E, 0x13, 0x07]));
+        assert_eq!(bulk_footer_for_slot(20, 8), Some([0x0F, 0x13, 0x07]));
+        // Out of range — 0 and over-max both rejected.
+        assert_eq!(bulk_header_for_slot(0, 1), None);
+        assert_eq!(bulk_header_for_slot(1, 0), None);
+        assert_eq!(bulk_header_for_slot(21, 1), None);
+        assert_eq!(bulk_header_for_slot(1, 9), None);
+        assert_eq!(bulk_footer_for_slot(21, 1), None);
     }
 }

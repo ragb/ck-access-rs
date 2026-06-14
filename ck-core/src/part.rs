@@ -87,7 +87,6 @@ byte_enum! {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
 pub struct Part {
     /// Active category, 0..=9 (indexes `category_voices`).
     #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 9)))]
