@@ -60,13 +60,21 @@ pub fn label_value(catalog: &str, value: i64) -> Option<String> {
     }
 }
 
-/// The catalog names this device exposes for name resolution.
+/// Every catalog this device exposes, in [`crate::catalog::CkCatalogs::as_value`]
+/// order. The first five are name-resolvable (a `ParamMeta`'s `catalog` hint
+/// points at one of them); `control_changes` and `rotary_specs` are browse-only
+/// reference tables, for which [`resolve_name`] returns `None`.
+///
+/// These must stay in step with `as_value`'s keys — a tool that reads
+/// `catalog: "eq_freq"` off a parameter looks that name up in the bundle.
 pub const CATALOG_NAMES: &[&str] = &[
     "voices",
     "part_effects",
     "ad_effects",
     "eq_freq",
+    "control_changes",
     "assign_target",
+    "rotary_specs",
 ];
 
 /// Convert any name strings in a (possibly partial) **Live Set** document to
