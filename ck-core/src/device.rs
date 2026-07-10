@@ -199,61 +199,79 @@ impl Device for Ck {
             }
             "live-set" => {
                 let ls: LiveSet = from_value_over_default(doc.clone()).map_err(enc)?;
-                let blocks = ls.to_blocks().map_err(enc)?;
-                // Replay the device's own envelope: Bulk Header, content, Footer.
-                let mut out = Message::BulkDump {
-                    device: ch,
-                    address: BULK_HEADER_CURRENT_BUFFER,
-                    data: Vec::new(),
-                }
-                .encode();
-                for (addr, data) in &blocks {
-                    out.extend(
-                        Message::BulkDump {
-                            device: ch,
-                            address: *addr,
-                            data: data.clone(),
-                        }
-                        .encode(),
-                    );
-                }
-                out.extend(
-                    Message::BulkDump {
-                        device: ch,
-                        address: BULK_FOOTER_CURRENT_BUFFER,
-                        data: Vec::new(),
-                    }
-                    .encode(),
-                );
-                Ok(out)
+                // `sync` writes the volatile edit buffer (audible immediately).
+                // Persisting to a slot is a separate `--store` step; see `store`.
+                live_set_frames(
+                    &ls,
+                    ch,
+                    BULK_HEADER_CURRENT_BUFFER,
+                    BULK_FOOTER_CURRENT_BUFFER,
+                )
             }
             other => Err(DeviceError::UnknownArea(other.to_string())),
         }
     }
 
-    /// Commit the edit buffer to a persistent Live Set slot (the panel STORE
-    /// button). `dest` is the destination slot as `"page-sound"`, 1-based
-    /// (e.g. `"20-8"`); the CK has no store-in-place, so an empty `dest` is an
-    /// error. Pair with a `sync live-set` (which writes the edit buffer): the
-    /// engine sends the encoded blocks, then this frame.
-    /// A *command store*: the CK commits its own edit buffer via a Store-To-Flash
-    /// frame, so the document and area it came from are irrelevant here. (Devices
-    /// with no save command — the Roland RE-202, say — instead re-encode `doc` to
-    /// the slot's address, which is why the hook carries them.)
-    fn store(
-        _area: &str,
-        _doc: &Value,
-        dest: &str,
-        ch: u8,
-    ) -> Option<Result<Vec<u8>, DeviceError>> {
+    /// Persist a Live Set to a non-volatile slot (the panel STORE button, and
+    /// the Melas editor's "Store to…"). `dest` is the destination slot as
+    /// `"page-sound"`, 1-based (e.g. `"20-8"`).
+    ///
+    /// A *copy-to-slot* store: the CK has no "commit the edit buffer in place"
+    /// command, so — exactly as the Melas editor does — we re-encode `doc`
+    /// bracketed to the target **slot** (`0E pp 0n` … `0F pp 0n`) and then send
+    /// the data-less Store To Flash commit (`0D 00 00`). The slot-bracketed
+    /// dump alone only touches working RAM; the commit is what survives a power
+    /// cycle. `doc` is the same Live Set the engine handed to [`encode`].
+    fn store(area: &str, doc: &Value, dest: &str, ch: u8) -> Option<Result<Vec<u8>, DeviceError>> {
         Some((|| {
+            if canon(area)? != "live-set" {
+                return Err(enc("store is only defined for the live-set area"));
+            }
             let (page, sound) = parse_slot(dest)?;
-            Ck::store_to_flash(ch, page, sound).ok_or_else(|| {
+            let header = crate::address::bulk_header_for_slot(page, sound).ok_or_else(|| {
                 enc(format!(
                     "slot {dest:?} out of range (page 1..=20, sound 1..=8)"
                 ))
-            })
+            })?;
+            let footer = crate::address::bulk_footer_for_slot(page, sound).unwrap();
+            let ls: LiveSet = from_value_over_default(doc.clone()).map_err(enc)?;
+            let mut out = live_set_frames(&ls, ch, header, footer)?;
+            out.extend(Ck::store_to_flash(ch));
+            Ok(out)
         })())
+    }
+
+    /// Load a stored Live Set into the edit buffer by the standard MIDI dance
+    /// of Bank Select MSB/LSB + Program Change (see [`live_set_select`]). `dest`
+    /// is the slot as `"page-sound"`, 1-based (e.g. `"20-8"`); `channel` is the
+    /// 1-based MIDI channel to address — the engine auto-detects it from the
+    /// System `rx_channel` (see [`Ck::recall_channel`]).
+    ///
+    /// Both the System "Tx/Rx Bank" and "Tx/Rx Pgm" switches must be on for the
+    /// CK to act on these (they are on by factory default).
+    ///
+    /// [`live_set_select`]: crate::live_set_select
+    fn recall(dest: &str, channel: u8) -> Option<Result<Vec<Vec<u8>>, DeviceError>> {
+        Some((|| {
+            let (page, sound) = parse_slot(dest)?;
+            crate::live_set_select::select_live_set_messages(channel, page, sound)
+                .map(|frames| frames.to_vec())
+                .map_err(|e| enc(e.to_string()))
+        })())
+    }
+
+    /// The CK's receive channel lives in the System document, so dump that to
+    /// learn which channel a recall should address.
+    fn recall_channel_area() -> Option<&'static str> {
+        Some("system")
+    }
+
+    /// Read the 1-based MIDI channel from a decoded System document. The raw
+    /// `rx_channel` is `0..=15` for channels 1–16 and `0x10` for "All"; "All"
+    /// (and anything unexpected) maps to channel 1, matching the editor.
+    fn recall_channel(doc: &Value) -> Option<u8> {
+        let rx = doc.get("common")?.get("rx_channel")?.as_u64()?;
+        Some(if rx <= 15 { rx as u8 + 1 } else { 1 })
     }
 
     fn classify_inbound(bytes: &[u8]) -> Inbound {
@@ -296,38 +314,64 @@ impl Device for Ck {
 }
 
 impl Ck {
-    /// Build the Store To Flash frame that commits the CK's edit buffer to a
-    /// non-volatile Live Set slot — the SysEx equivalent of the panel STORE
-    /// button (and the Melas editor's "Store" / "Store to…").
+    /// The data-less **Store To Flash** commit (`0D 00 00`) — the frame that
+    /// makes the CK write its pending Live Set changes to non-volatile memory,
+    /// the SysEx equivalent of the panel STORE button.
     ///
-    /// A bulk dump alone — even one bracketed to a User slot with
-    /// [`bulk_header_for_slot`](crate::address::bulk_header_for_slot) — only
-    /// writes working RAM and is lost on a power cycle. To persist an edit the
-    /// way the Melas editor does: dump the whole Live Set to the edit buffer
-    /// (via [`encode`](Self::encode)), then send this frame naming the
-    /// destination slot. For plain "Store" (in place) pass the slot the Live
-    /// Set was loaded from — there is no coordinate-less store on the wire.
+    /// On its own this does nothing useful; it's the tail of the store
+    /// sequence built by [`store`](Device::store): a Live Set dumped bracketed
+    /// to the target slot (`0E pp 0n` … `0F pp 0n`), then this commit. A slot
+    /// dump without it is lost on a power cycle.
     ///
-    /// `page`/`sound` are 1-based (1..=20, 1..=8) to match the CK's display;
-    /// returns `None` if either is out of range.
-    ///
-    /// Wire format (device-verified against a Melas capture): a Bulk Dump to
-    /// [`STORE_TO_FLASH_BASE`] (`0B 10 00`) with data `00 0F <page-1>
-    /// <sound-1> 00 00` — e.g. slot 20-8 → `F0 43 00 7F 1C 00 0A 0B 0B 10 00
-    /// 00 0F 13 07 00 00 31 F7`.
-    pub fn store_to_flash(ch: u8, page: u8, sound: u8) -> Option<Vec<u8>> {
-        // Reuse the slot range check (1..=20, 1..=8).
-        crate::address::bulk_header_for_slot(page, sound)?;
-        let data = vec![0x00, 0x0F, page - 1, sound - 1, 0x00, 0x00];
-        Some(
+    /// Wire format (verified by intercepting the Melas editor's output):
+    /// `F0 43 00 7F 1C 00 04 0B 0D 00 00 68 F7`.
+    pub fn store_to_flash(ch: u8) -> Vec<u8> {
+        Message::BulkDump {
+            device: ch,
+            address: STORE_TO_FLASH_BASE,
+            data: Vec::new(),
+        }
+        .encode()
+    }
+}
+
+/// Encode a Live Set as the CK's bulk envelope: `header`, every content block,
+/// `footer`. Use the current-buffer brackets ([`BULK_HEADER_CURRENT_BUFFER`])
+/// to write the audible edit buffer, or the slot brackets
+/// ([`bulk_header_for_slot`](crate::address::bulk_header_for_slot)) to write a
+/// stored slot.
+fn live_set_frames(
+    ls: &LiveSet,
+    ch: u8,
+    header: [u8; 3],
+    footer: [u8; 3],
+) -> Result<Vec<u8>, DeviceError> {
+    let blocks = ls.to_blocks().map_err(enc)?;
+    let mut out = Message::BulkDump {
+        device: ch,
+        address: header,
+        data: Vec::new(),
+    }
+    .encode();
+    for (addr, data) in &blocks {
+        out.extend(
             Message::BulkDump {
                 device: ch,
-                address: STORE_TO_FLASH_BASE,
-                data,
+                address: *addr,
+                data: data.clone(),
             }
             .encode(),
-        )
+        );
     }
+    out.extend(
+        Message::BulkDump {
+            device: ch,
+            address: footer,
+            data: Vec::new(),
+        }
+        .encode(),
+    );
+    Ok(out)
 }
 
 /// Which area a dump's address space belongs to, for inbound classification.
@@ -366,56 +410,84 @@ mod tests {
     }
 
     #[test]
-    fn store_to_flash_frames_match_capture() {
-        // Byte-exact against the Melas CK editor capture (docs/sysex-notes.md).
-        // Slot 1-1 → data 00 0F 00 00 00 00, checksum 4B.
+    fn store_to_flash_commit_frame_matches_capture() {
+        // The data-less Store To Flash commit, byte-exact against the Melas
+        // capture: F0 43 00 7F 1C 00 04 0B 0D 00 00 68 F7.
         assert_eq!(
-            Ck::store_to_flash(0, 1, 1).unwrap(),
-            vec![
-                0xF0, 0x43, 0x00, 0x7F, 0x1C, 0x00, 0x0A, 0x0B, 0x0B, 0x10, 0x00, 0x00, 0x0F, 0x00,
-                0x00, 0x00, 0x00, 0x4B, 0xF7,
-            ],
-        );
-        // Slot 20-8 → data 00 0F 13 07 00 00, checksum 31.
-        assert_eq!(
-            Ck::store_to_flash(0, 20, 8).unwrap(),
-            vec![
-                0xF0, 0x43, 0x00, 0x7F, 0x1C, 0x00, 0x0A, 0x0B, 0x0B, 0x10, 0x00, 0x00, 0x0F, 0x13,
-                0x07, 0x00, 0x00, 0x31, 0xF7,
-            ],
+            Ck::store_to_flash(0),
+            vec![0xF0, 0x43, 0x00, 0x7F, 0x1C, 0x00, 0x04, 0x0B, 0x0D, 0x00, 0x00, 0x68, 0xF7],
         );
         // Device number rides the low nibble of byte 2.
-        assert_eq!(Ck::store_to_flash(3, 1, 1).unwrap()[2], 0x03);
-        // Out-of-range slots are rejected.
-        assert!(Ck::store_to_flash(0, 0, 1).is_none());
-        assert!(Ck::store_to_flash(0, 21, 1).is_none());
-        assert!(Ck::store_to_flash(0, 1, 9).is_none());
+        assert_eq!(Ck::store_to_flash(3)[2], 0x03);
     }
 
     #[test]
-    fn store_via_device_trait_parses_slot() {
-        // "20-8" routes through parse_slot to the same bytes as store_to_flash.
+    fn store_dumps_to_the_slot_then_commits() {
+        let ls = LiveSet::default();
+        let doc = serde_yaml::to_value(&ls).unwrap();
+        let bytes = Ck::store("live-set", &doc, "20-1", 0).unwrap().unwrap();
+        let frames = midi_access_core::split_sysex(&bytes);
+
+        // First frame is the Bulk Header bracketed to the SLOT (0E 13 00 for
+        // page 20 / sound 1) — NOT the edit buffer (0E 7F 00).
         assert_eq!(
-            Ck::store("live-set", &Value::Null, "20-8", 0)
-                .unwrap()
-                .unwrap(),
-            Ck::store_to_flash(0, 20, 8).unwrap(),
+            Message::decode(&frames[0]).unwrap().address(),
+            [0x0E, 0x13, 0x00]
         );
-        // Alternate separators accepted.
+        // Last frame is the Store To Flash commit.
+        assert_eq!(frames.last().unwrap(), &Ck::store_to_flash(0));
+        // The frame before it is the slot footer 0F 13 00.
+        let footer = &frames[frames.len() - 2];
         assert_eq!(
-            Ck::store("live-set", &Value::Null, "1/1", 0)
-                .unwrap()
-                .unwrap(),
-            Ck::store_to_flash(0, 1, 1).unwrap()
+            Message::decode(footer).unwrap().address(),
+            [0x0F, 0x13, 0x00]
         );
-        // Empty / malformed / out-of-range are errors (but Some, i.e. supported).
-        assert!(Ck::store("live-set", &Value::Null, "", 0).unwrap().is_err());
-        assert!(Ck::store("live-set", &Value::Null, "20", 0)
-            .unwrap()
-            .is_err());
-        assert!(Ck::store("live-set", &Value::Null, "21-1", 0)
-            .unwrap()
-            .is_err());
+
+        // Bad area / slot are errors (but Some — the device supports store).
+        assert!(Ck::store("system", &doc, "1-1", 0).unwrap().is_err());
+        assert!(Ck::store("live-set", &doc, "", 0).unwrap().is_err());
+        assert!(Ck::store("live-set", &doc, "21-1", 0).unwrap().is_err());
+    }
+
+    #[test]
+    fn recall_builds_bank_and_program_change_from_a_slot() {
+        // "20-8" on channel 1 → the same three frames as select_live_set_messages.
+        let frames = Ck::recall("20-8", 1).unwrap().unwrap();
+        assert_eq!(
+            frames,
+            crate::live_set_select::select_live_set_messages(1, 20, 8)
+                .unwrap()
+                .to_vec()
+        );
+        // Alternate separators route through parse_slot too.
+        assert_eq!(
+            Ck::recall("1/1", 10).unwrap().unwrap(),
+            crate::live_set_select::select_live_set_messages(10, 1, 1)
+                .unwrap()
+                .to_vec()
+        );
+        // Malformed / out-of-range slots and channels are supported-but-errors.
+        assert!(Ck::recall("nope", 1).unwrap().is_err());
+        assert!(Ck::recall("21-1", 1).unwrap().is_err());
+        assert!(Ck::recall("1-1", 17).unwrap().is_err());
+    }
+
+    #[test]
+    fn recall_channel_reads_rx_channel_from_system() {
+        assert_eq!(Ck::recall_channel_area(), Some("system"));
+        // rx_channel 0 (ch 1) .. 15 (ch 16) map to 1-based; 0x10 "All" → 1.
+        let doc = |rx: u8| {
+            serde_yaml::to_value(System::default())
+                .map(|mut v| {
+                    v["common"]["rx_channel"] = rx.into();
+                    v
+                })
+                .unwrap()
+        };
+        assert_eq!(Ck::recall_channel(&doc(0)), Some(1));
+        assert_eq!(Ck::recall_channel(&doc(9)), Some(10));
+        assert_eq!(Ck::recall_channel(&doc(15)), Some(16));
+        assert_eq!(Ck::recall_channel(&doc(16)), Some(1)); // All → 1
     }
 
     #[test]
