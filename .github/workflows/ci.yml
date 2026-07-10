@@ -66,7 +66,12 @@ jobs:
       - name: Install wasm-pack
         uses: jetli/wasm-pack-action@v0.4.0
         with:
-          version: latest
+          # Pinned, not `latest`: the action resolves `latest` from the GitHub API
+          # and silently falls back to v0.9.1 when that lookup is rate-limited.
+          # v0.9.1 predates Cargo workspace inheritance and dies on
+          # `repository.workspace = true` with "invalid type: map, expected a
+          # string" — a green build one minute and a red one the next.
+          version: "v0.15.0"
 
       - name: wasm-pack test (Node)
         working-directory: ck-wasm

@@ -2,10 +2,11 @@
 name = "ck-wasm"
 version.workspace = true
 edition.workspace = true
-# Explicit (not `license.workspace`) because wasm-pack's manifest parser rejects
-# workspace-inherited license fields ("invalid type: map, expected a string").
+# Explicit (not `*.workspace = true`) because older wasm-pack manifest parsers
+# predate Cargo workspace inheritance and reject it with "invalid type: map,
+# expected a string". CI pins wasm-pack, but a contributor's local copy may not.
 license = "MIT"
-repository.workspace = true
+repository = "https://github.com/ragb/ck-access-rs"
 description = "WASM + TypeScript bindings for ck-core."
 
 [lib]
