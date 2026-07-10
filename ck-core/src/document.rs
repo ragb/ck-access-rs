@@ -16,7 +16,7 @@
 
 use serde::{Deserialize, Deserializer, Serialize};
 
-use midi_access_core::merge::slots;
+use midi_access_core::merge::{merge_over, slots};
 
 use crate::address::{
     AUDIO_TRIGGER_PATH_BASE, LIVE_SET_COMMON_BASE, LIVE_SET_EQ_BASE, ROTARY_BASE, ZONE_COUNT,
@@ -34,6 +34,11 @@ use crate::zone::Zone;
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+// Restores the per-field `"default":` entries in the emitted JSON Schema. Only
+// under `schema`: `tsify` reads a container default as "every field optional" and
+// would loosen the editor's TypeScript. Partial-document leniency lives at the
+// document boundary instead (see `document::from_value_over_default`).
+#[cfg_attr(feature = "schema", serde(default))]
 pub struct System {
     pub common: SystemCommon,
     pub master_eq: MasterEq,
@@ -59,6 +64,11 @@ pub struct RawBlock {
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+// Restores the per-field `"default":` entries in the emitted JSON Schema. Only
+// under `schema`: `tsify` reads a container default as "every field optional" and
+// would loosen the editor's TypeScript. Partial-document leniency lives at the
+// document boundary instead (see `document::from_value_over_default`).
+#[cfg_attr(feature = "schema", serde(default))]
 pub struct LiveSet {
     pub common: LiveSetCommon,
     pub eq: LiveSetEq,
@@ -123,6 +133,40 @@ fn factory_part(i: usize) -> Part {
         part_color: COLORS.get(i).copied().unwrap_or(0),
         ..Part::default()
     }
+}
+
+/// Deserialize a **partial** document by overlaying it on `T`'s factory default.
+///
+/// The area structs deliberately carry no container-level `#[serde(default)]`:
+/// `tsify` treats that as "every field optional" and would emit a permissive
+/// TypeScript interface for the editor. So the typed model stays strict, and the
+/// leniency that lets a preset name only the fields it changes lives *here*, at
+/// the document boundary — [`crate::yaml`] and the [`Device`](crate::Device) impl
+/// both load through it.
+///
+/// An empty document yields the bare default. Anything else is deep-merged over
+/// it: nested mappings recurse, arrays replace wholesale — and a replaced
+/// `zones`/`parts` array is then re-padded per slot by [`slots`].
+pub(crate) fn from_value_over_default<T>(overlay: serde_yaml::Value) -> Result<T, CodecError>
+where
+    T: Default + Serialize + serde::de::DeserializeOwned,
+{
+    let base = serde_yaml::to_value(T::default()).map_err(|e| CodecError::Yaml(e.to_string()))?;
+    let merged = if overlay.is_null() {
+        base
+    } else {
+        merge_over(base, overlay)
+    };
+    serde_yaml::from_value(merged).map_err(|e| CodecError::Yaml(e.to_string()))
+}
+
+/// [`from_value_over_default`] from a YAML/JSON string.
+pub(crate) fn from_yaml_over_default<T>(s: &str) -> Result<T, CodecError>
+where
+    T: Default + Serialize + serde::de::DeserializeOwned,
+{
+    let overlay = serde_yaml::from_str(s).map_err(|e| CodecError::Yaml(e.to_string()))?;
+    from_value_over_default(overlay)
 }
 
 /// Deserialize `zones`: per-slot merge over [`factory_zone`], padded to
@@ -261,12 +305,11 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "partial-preset merge needs reimpl after removing struct-level serde(default); see editor README"]
     fn partial_yaml_merges_over_defaults() {
         // Sparse Live Set: only a name and one part's cutoff. The single part is
         // padded to the full count and the rest fills from the factory default.
         let yaml = "common:\n  name: My Patch\nparts:\n- filter_cutoff: 100\n";
-        let ls: LiveSet = serde_yaml::from_str(yaml).unwrap();
+        let ls: LiveSet = crate::yaml::live_set_from_yaml_str(yaml).unwrap();
         assert_eq!(ls.common.name, "My Patch");
         assert_eq!(ls.common.reverb_depth, 0x14); // from default
         assert_eq!(ls.parts[0].filter_cutoff, 100); // overridden
@@ -276,13 +319,12 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "partial-preset merge needs reimpl after removing struct-level serde(default); see editor README"]
     fn mentioned_slot_inherits_factory_slot_defaults() {
         // A part that only sets a voice still comes up switched on, because the
         // mentioned slot 0 merges over factory_part(0) (Part A on/selected), not
         // over the bare Part::default (off). Explicit fields still win.
         let yaml = "parts:\n- current_category: 1\n- part_switch: true\n";
-        let ls: LiveSet = serde_yaml::from_str(yaml).unwrap();
+        let ls: LiveSet = crate::yaml::live_set_from_yaml_str(yaml).unwrap();
         assert_eq!(ls.parts[0].current_category, 1); // explicit
         assert!(ls.parts[0].part_switch); // from factory slot 0
         assert!(ls.parts[0].part_selected); // from factory slot 0
@@ -290,17 +332,16 @@ mod tests {
         assert!(ls.parts[1].part_switch); // explicit override on slot 1
         assert_eq!(ls.parts[1].part_color, 0x08); // factory slot 1 colour
                                                   // Zone 1 still comes up enabled when mentioned-but-empty.
-        let ls2: LiveSet = serde_yaml::from_str("zones:\n- {}\n").unwrap();
+        let ls2: LiveSet = crate::yaml::live_set_from_yaml_str("zones:\n- {}\n").unwrap();
         assert!(ls2.zones[0].zone_switch);
     }
 
     #[test]
-    #[ignore = "partial-preset merge needs reimpl after removing struct-level serde(default); see editor README"]
     fn short_arrays_pad_to_full_count() {
         // One part, two zones supplied → padded to PARTS / ZONES with factory
         // slots, then fully encodable.
         let yaml = "parts:\n- {}\nzones:\n- {}\n- {}\n";
-        let ls: LiveSet = serde_yaml::from_str(yaml).unwrap();
+        let ls: LiveSet = crate::yaml::live_set_from_yaml_str(yaml).unwrap();
         assert_eq!(ls.parts.len(), LiveSet::PARTS);
         assert_eq!(ls.zones.len(), LiveSet::ZONES);
         // Padded (unmentioned) slots get factory per-slot defaults.
@@ -314,9 +355,8 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "partial-preset merge needs reimpl after removing struct-level serde(default); see editor README"]
     fn empty_arrays_pad_to_full_count() {
-        let ls: LiveSet = serde_yaml::from_str("parts: []\nzones: []\n").unwrap();
+        let ls: LiveSet = crate::yaml::live_set_from_yaml_str("parts: []\nzones: []\n").unwrap();
         assert_eq!(ls.parts.len(), LiveSet::PARTS);
         assert_eq!(ls.zones.len(), LiveSet::ZONES);
         ls.to_blocks().unwrap();
@@ -324,7 +364,7 @@ mod tests {
 
     #[test]
     fn too_many_parts_is_rejected() {
-        let err = serde_yaml::from_str::<LiveSet>("parts: [{}, {}, {}, {}]\n");
+        let err = crate::yaml::live_set_from_yaml_str("parts: [{}, {}, {}, {}]\n");
         assert!(err.is_err());
     }
 
@@ -339,9 +379,9 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "partial-preset merge needs reimpl after removing struct-level serde(default); see editor README"]
     fn partial_system_yaml_merges() {
-        let s: System = serde_yaml::from_str("common:\n  master_tune: 1024\n").unwrap();
+        let s: System =
+            crate::yaml::system_from_yaml_str("common:\n  master_tune: 1024\n").unwrap();
         assert!(s.common.local_control); // default true, not bool::default false
         assert_eq!(s.common.output_gain, 0x3E);
     }

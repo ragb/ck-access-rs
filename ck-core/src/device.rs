@@ -16,7 +16,7 @@ use crate::address::{
     AddressSpace, BULK_FOOTER_CURRENT_BUFFER, BULK_HEADER_CURRENT_BUFFER, MASTER_EQ_BASE,
     STORE_TO_FLASH_BASE, SYSTEM_COMMON_BASE,
 };
-use crate::document::AddressedBlock;
+use crate::document::{from_value_over_default, AddressedBlock};
 use crate::sysex::Message;
 use crate::{
     classify_inbound, identify_reply, InboundMessage, LiveSet, MasterEq, System, SystemCommon,
@@ -180,7 +180,7 @@ impl Device for Ck {
     fn encode(area: &str, doc: &Value, ch: u8) -> Result<Vec<u8>, DeviceError> {
         match canon(area)? {
             "system" => {
-                let s: System = serde_yaml::from_value(doc.clone()).map_err(enc)?;
+                let s: System = from_value_over_default(doc.clone()).map_err(enc)?;
                 let mut out = Message::BulkDump {
                     device: ch,
                     address: SYSTEM_COMMON_BASE,
@@ -198,7 +198,7 @@ impl Device for Ck {
                 Ok(out)
             }
             "live-set" => {
-                let ls: LiveSet = serde_yaml::from_value(doc.clone()).map_err(enc)?;
+                let ls: LiveSet = from_value_over_default(doc.clone()).map_err(enc)?;
                 let blocks = ls.to_blocks().map_err(enc)?;
                 // Replay the device's own envelope: Bulk Header, content, Footer.
                 let mut out = Message::BulkDump {
@@ -288,8 +288,8 @@ impl Device for Ck {
         // Parse-level kind check (matches the pre-migration `show`/`lint`): a file
         // may deserialize into the typed model yet fail to byte-encode.
         match canon(area) {
-            Ok("system") => serde_yaml::from_value::<System>(doc.clone()).is_ok(),
-            Ok("live-set") => serde_yaml::from_value::<LiveSet>(doc.clone()).is_ok(),
+            Ok("system") => from_value_over_default::<System>(doc.clone()).is_ok(),
+            Ok("live-set") => from_value_over_default::<LiveSet>(doc.clone()).is_ok(),
             _ => false,
         }
     }
@@ -426,7 +426,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "partial-preset merge needs reimpl after removing struct-level serde(default); see editor README"]
     fn accepts_matches_parse_not_encode() {
         // A partial Live Set with a 2-element category_voices parses (Vec) but
         // would fail to byte-encode (needs 10) — `accepts` must still say yes.
