@@ -71,6 +71,11 @@ byte_enum! {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+// Restores the per-field `"default":` entries in the emitted JSON Schema. Only
+// under `schema`: `tsify` reads a container default as "every field optional" and
+// would loosen the editor's TypeScript. Partial-document leniency lives at the
+// document boundary instead (see `document::from_value_over_default`).
+#[cfg_attr(feature = "schema", serde(default))]
 pub struct SystemCommon {
     /// Master Tune, raw 16-bit value (`414.72–466.78 Hz`; default `0x0400`).
     #[cfg_attr(feature = "schema", schemars(range(min = 0, max = 65535)))]
@@ -328,6 +333,11 @@ impl SystemCommon {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+// Restores the per-field `"default":` entries in the emitted JSON Schema. Only
+// under `schema`: `tsify` reads a container default as "every field optional" and
+// would loosen the editor's TypeScript. Partial-document leniency lives at the
+// document boundary instead (see `document::from_value_over_default`).
+#[cfg_attr(feature = "schema", serde(default))]
 pub struct MasterEq {
     /// Low gain, −12..=+12 dB.
     #[cfg_attr(feature = "schema", schemars(range(min = -12, max = 12)))]

@@ -27,6 +27,11 @@ fn u8_is_zero(v: &u8) -> bool {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+// Restores the per-field `"default":` entries in the emitted JSON Schema. Only
+// under `schema`: `tsify` reads a container default as "every field optional" and
+// would loosen the editor's TypeScript. Partial-document leniency lives at the
+// document boundary instead (see `document::from_value_over_default`).
+#[cfg_attr(feature = "schema", serde(default))]
 pub struct ZoneTransmit {
     /// Bit 0: transmit Bank Select MSB+LSB.
     pub bank_select: bool,
@@ -72,6 +77,11 @@ impl ZoneTransmit {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+// Restores the per-field `"default":` entries in the emitted JSON Schema. Only
+// under `schema`: `tsify` reads a container default as "every field optional" and
+// would loosen the editor's TypeScript. Partial-document leniency lives at the
+// document boundary instead (see `document::from_value_over_default`).
+#[cfg_attr(feature = "schema", serde(default))]
 pub struct ZoneTransmitControllers {
     /// Bit 0: transmit Pitch Bend.
     pub pitch_bend: bool,
@@ -112,6 +122,11 @@ impl ZoneTransmitControllers {
 #[cfg_attr(feature = "tsify", tsify(into_wasm_abi, from_wasm_abi))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+// Restores the per-field `"default":` entries in the emitted JSON Schema. Only
+// under `schema`: `tsify` reads a container default as "every field optional" and
+// would loosen the editor's TypeScript. Partial-document leniency lives at the
+// document boundary instead (see `document::from_value_over_default`).
+#[cfg_attr(feature = "schema", serde(default))]
 pub struct Zone {
     /// Enables this Zone's MIDI transmission.
     pub zone_switch: bool,

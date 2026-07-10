@@ -123,23 +123,21 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "partial-preset merge needs reimpl after removing struct-level serde(default); see editor README"]
     fn resolves_names_in_partial_live_set() {
         let yaml = "parts:\n- effect_1_type: Hall Reverb\n  category_voices: [CFX Stereo, 78Rd]\n";
         let out = resolve_names_live_set(yaml).unwrap();
         // The normalized YAML must now parse straight into the typed model.
-        let ls: LiveSet = serde_yaml::from_str(&out).unwrap();
+        let ls: LiveSet = crate::yaml::live_set_from_yaml_str(&out).unwrap();
         assert_eq!(ls.parts[0].effect_1_type, 0x1B);
         assert_eq!(ls.parts[0].category_voices[0], 0);
         assert_eq!(ls.parts[0].category_voices[1], 13);
     }
 
     #[test]
-    #[ignore = "partial-preset merge needs reimpl after removing struct-level serde(default); see editor README"]
     fn numbers_pass_through() {
         let yaml = "parts:\n- effect_1_type: 25\n";
         let out = resolve_names_live_set(yaml).unwrap();
-        let ls: LiveSet = serde_yaml::from_str(&out).unwrap();
+        let ls: LiveSet = crate::yaml::live_set_from_yaml_str(&out).unwrap();
         assert_eq!(ls.parts[0].effect_1_type, 25);
     }
 }

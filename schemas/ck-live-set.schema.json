@@ -3,22 +3,80 @@
   "title": "LiveSet",
   "description": "One Live Set patch: common settings, EQ, four Zones (1..4) and three Parts (A/B/C). The Audio Trigger wave-file path is kept as a string.",
   "type": "object",
-  "required": [
-    "common",
-    "eq",
-    "parts",
-    "zones"
-  ],
   "properties": {
     "audio_trigger_path": {
       "description": "Path to the audio-trigger sample file (may be empty).",
       "type": "string"
     },
     "common": {
-      "$ref": "#/definitions/LiveSetCommon"
+      "default": {
+        "ad_effect_1_depth": 64,
+        "ad_effect_1_rate": 64,
+        "ad_effect_1_type": 0,
+        "ad_effect_2_depth": 64,
+        "ad_effect_2_rate": 64,
+        "ad_effect_2_type": 0,
+        "ad_eq_high_freq": 52,
+        "ad_eq_high_gain": 0,
+        "ad_eq_low_freq": 18,
+        "ad_eq_low_gain": 0,
+        "ad_eq_mid_freq": 41,
+        "ad_eq_mid_gain": 0,
+        "ad_noise_gate_switch": false,
+        "ad_noise_gate_threshold": 82,
+        "ad_volume": 127,
+        "advanced_zone": false,
+        "audio_trigger_key": "highest",
+        "audio_trigger_play_mode": "one_shot",
+        "audio_trigger_switch": false,
+        "audio_trigger_volume": 64,
+        "delay_depth": 64,
+        "delay_switch": false,
+        "delay_tempo_time": 11,
+        "delay_time": 64,
+        "delay_type": "digital",
+        "foot_pedal_1_assign": 64,
+        "foot_pedal_1_limit_high": 127,
+        "foot_pedal_1_limit_low": 0,
+        "foot_pedal_2_assign": 11,
+        "foot_pedal_2_limit_high": 127,
+        "foot_pedal_2_limit_low": 0,
+        "layer_split_mode": 0,
+        "live_set_eq_mode": false,
+        "master_keyboard_mode": false,
+        "mod_wheel_assign": 1,
+        "name": "Init",
+        "reverb_depth": 20,
+        "reverb_switch": true,
+        "reverb_type": "hall",
+        "rotary_speed": "slow",
+        "rotary_stop": false,
+        "sound_transpose": 0,
+        "split_point": 55,
+        "split_point_a_b": 55,
+        "split_point_b_c": 79,
+        "tempo_x10": 1200
+      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/LiveSetCommon"
+        }
+      ]
     },
     "eq": {
-      "$ref": "#/definitions/LiveSetEq"
+      "default": {
+        "high_freq": 48,
+        "high_gain": 0,
+        "low_freq": 12,
+        "low_gain": 0,
+        "mid_freq": 34,
+        "mid_gain": 0
+      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/LiveSetEq"
+        }
+      ]
     },
     "extra_blocks": {
       "description": "Blocks present in the dump that this crate doesn't model individually (Soundmondo format version, other firmware-specific blocks), kept verbatim.",
@@ -29,6 +87,236 @@
     },
     "parts": {
       "description": "The three Parts (A, B, C). A preset may supply fewer (or partial) slots: each is merged over that slot's factory default and missing trailing slots are filled from it.",
+      "default": [
+        {
+          "amplifier_modulation_depth": 0,
+          "category_voices": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "current_category": 0,
+          "drawbars": [
+            127,
+            127,
+            127,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "drive_depth": 64,
+          "drive_switch": false,
+          "drive_type": "over_drive",
+          "effect_1_depth": 64,
+          "effect_1_rate": 64,
+          "effect_1_switch": false,
+          "effect_1_type": 0,
+          "effect_2_depth": 64,
+          "effect_2_rate": 64,
+          "effect_2_switch": false,
+          "effect_2_type": 0,
+          "effect_select": "effect1",
+          "eg_attack": 64,
+          "eg_release": 64,
+          "eg_switch": true,
+          "external_keyboard": "ext_int",
+          "filter_cutoff": 64,
+          "filter_modulation_depth": 0,
+          "filter_resonance": 64,
+          "filter_switch": true,
+          "modulation_speed": 0,
+          "mono_poly": "poly",
+          "mono_type": "normal",
+          "note_shift": 0,
+          "pan": 0,
+          "part_color": 2,
+          "part_selected": true,
+          "part_switch": true,
+          "part_volume": 127,
+          "percussion_decay": "slow",
+          "percussion_switch": false,
+          "percussion_type": "third",
+          "percussion_volume": "normal",
+          "pitch_bend_range": 2,
+          "pitch_modulation_depth": 10,
+          "portamento_mode": "rate",
+          "portamento_time": 20,
+          "receive_expression": true,
+          "receive_soft": true,
+          "receive_sostenuto": true,
+          "receive_sustain": true,
+          "touch_sensitivity_depth": 64,
+          "touch_sensitivity_offset": 64,
+          "unison_detune": 64,
+          "unison_switch": false,
+          "unison_type": "multi_layer",
+          "unison_volume": 127,
+          "vibrato_chorus_switch": false,
+          "vibrato_chorus_type": "c3"
+        },
+        {
+          "amplifier_modulation_depth": 0,
+          "category_voices": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "current_category": 0,
+          "drawbars": [
+            127,
+            127,
+            127,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "drive_depth": 64,
+          "drive_switch": false,
+          "drive_type": "over_drive",
+          "effect_1_depth": 64,
+          "effect_1_rate": 64,
+          "effect_1_switch": false,
+          "effect_1_type": 0,
+          "effect_2_depth": 64,
+          "effect_2_rate": 64,
+          "effect_2_switch": false,
+          "effect_2_type": 0,
+          "effect_select": "effect1",
+          "eg_attack": 64,
+          "eg_release": 64,
+          "eg_switch": true,
+          "external_keyboard": "ext_int",
+          "filter_cutoff": 64,
+          "filter_modulation_depth": 0,
+          "filter_resonance": 64,
+          "filter_switch": true,
+          "modulation_speed": 0,
+          "mono_poly": "poly",
+          "mono_type": "normal",
+          "note_shift": 0,
+          "pan": 0,
+          "part_color": 8,
+          "part_selected": false,
+          "part_switch": false,
+          "part_volume": 127,
+          "percussion_decay": "slow",
+          "percussion_switch": false,
+          "percussion_type": "third",
+          "percussion_volume": "normal",
+          "pitch_bend_range": 2,
+          "pitch_modulation_depth": 10,
+          "portamento_mode": "rate",
+          "portamento_time": 20,
+          "receive_expression": true,
+          "receive_soft": true,
+          "receive_sostenuto": true,
+          "receive_sustain": true,
+          "touch_sensitivity_depth": 64,
+          "touch_sensitivity_offset": 64,
+          "unison_detune": 64,
+          "unison_switch": false,
+          "unison_type": "multi_layer",
+          "unison_volume": 127,
+          "vibrato_chorus_switch": false,
+          "vibrato_chorus_type": "c3"
+        },
+        {
+          "amplifier_modulation_depth": 0,
+          "category_voices": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "current_category": 0,
+          "drawbars": [
+            127,
+            127,
+            127,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "drive_depth": 64,
+          "drive_switch": false,
+          "drive_type": "over_drive",
+          "effect_1_depth": 64,
+          "effect_1_rate": 64,
+          "effect_1_switch": false,
+          "effect_1_type": 0,
+          "effect_2_depth": 64,
+          "effect_2_rate": 64,
+          "effect_2_switch": false,
+          "effect_2_type": 0,
+          "effect_select": "effect1",
+          "eg_attack": 64,
+          "eg_release": 64,
+          "eg_switch": true,
+          "external_keyboard": "ext_int",
+          "filter_cutoff": 64,
+          "filter_modulation_depth": 0,
+          "filter_resonance": 64,
+          "filter_switch": true,
+          "modulation_speed": 0,
+          "mono_poly": "poly",
+          "mono_type": "normal",
+          "note_shift": 0,
+          "pan": 0,
+          "part_color": 4,
+          "part_selected": false,
+          "part_switch": false,
+          "part_volume": 127,
+          "percussion_decay": "slow",
+          "percussion_switch": false,
+          "percussion_type": "third",
+          "percussion_volume": "normal",
+          "pitch_bend_range": 2,
+          "pitch_modulation_depth": 10,
+          "portamento_mode": "rate",
+          "portamento_time": 20,
+          "receive_expression": true,
+          "receive_soft": true,
+          "receive_sostenuto": true,
+          "receive_sustain": true,
+          "touch_sensitivity_depth": 64,
+          "touch_sensitivity_offset": 64,
+          "unison_detune": 64,
+          "unison_switch": false,
+          "unison_type": "multi_layer",
+          "unison_volume": 127,
+          "vibrato_chorus_switch": false,
+          "vibrato_chorus_type": "c3"
+        }
+      ],
       "type": "array",
       "items": {
         "$ref": "#/definitions/Part"
@@ -47,6 +335,112 @@
     },
     "zones": {
       "description": "The four Zones (master-keyboard transmit configs). A preset may supply fewer (or partial) slots: each is merged over that slot's factory default and missing trailing slots are filled from it.",
+      "default": [
+        {
+          "midi_bank_lsb": 0,
+          "midi_bank_msb": 0,
+          "midi_pan": 0,
+          "midi_program": 0,
+          "midi_volume": 127,
+          "note_limit_high": 127,
+          "note_limit_low": 0,
+          "transmit": {
+            "bank_select": true,
+            "pan": true,
+            "program_change": true,
+            "reserved_bits": 16,
+            "volume": true
+          },
+          "transmit_channel": 0,
+          "transmit_controllers": {
+            "foot_pedal_1": true,
+            "foot_pedal_2": true,
+            "modulation": true,
+            "pitch_bend": true
+          },
+          "transpose_octave": 0,
+          "transpose_semitone": 0,
+          "zone_switch": true
+        },
+        {
+          "midi_bank_lsb": 0,
+          "midi_bank_msb": 0,
+          "midi_pan": 0,
+          "midi_program": 0,
+          "midi_volume": 127,
+          "note_limit_high": 127,
+          "note_limit_low": 0,
+          "transmit": {
+            "bank_select": true,
+            "pan": true,
+            "program_change": true,
+            "reserved_bits": 16,
+            "volume": true
+          },
+          "transmit_channel": 1,
+          "transmit_controllers": {
+            "foot_pedal_1": true,
+            "foot_pedal_2": true,
+            "modulation": true,
+            "pitch_bend": true
+          },
+          "transpose_octave": 0,
+          "transpose_semitone": 0,
+          "zone_switch": false
+        },
+        {
+          "midi_bank_lsb": 0,
+          "midi_bank_msb": 0,
+          "midi_pan": 0,
+          "midi_program": 0,
+          "midi_volume": 127,
+          "note_limit_high": 127,
+          "note_limit_low": 0,
+          "transmit": {
+            "bank_select": true,
+            "pan": true,
+            "program_change": true,
+            "reserved_bits": 16,
+            "volume": true
+          },
+          "transmit_channel": 2,
+          "transmit_controllers": {
+            "foot_pedal_1": true,
+            "foot_pedal_2": true,
+            "modulation": true,
+            "pitch_bend": true
+          },
+          "transpose_octave": 0,
+          "transpose_semitone": 0,
+          "zone_switch": false
+        },
+        {
+          "midi_bank_lsb": 0,
+          "midi_bank_msb": 0,
+          "midi_pan": 0,
+          "midi_program": 0,
+          "midi_volume": 127,
+          "note_limit_high": 127,
+          "note_limit_low": 0,
+          "transmit": {
+            "bank_select": true,
+            "pan": true,
+            "program_change": true,
+            "reserved_bits": 16,
+            "volume": true
+          },
+          "transmit_channel": 3,
+          "transmit_controllers": {
+            "foot_pedal_1": true,
+            "foot_pedal_2": true,
+            "modulation": true,
+            "pitch_bend": true
+          },
+          "transpose_octave": 0,
+          "transpose_semitone": 0,
+          "zone_switch": false
+        }
+      ],
       "type": "array",
       "items": {
         "$ref": "#/definitions/Zone"
@@ -114,57 +508,10 @@
     "LiveSetCommon": {
       "description": "The Live Set **Common** block.",
       "type": "object",
-      "required": [
-        "ad_effect_1_depth",
-        "ad_effect_1_rate",
-        "ad_effect_1_type",
-        "ad_effect_2_depth",
-        "ad_effect_2_rate",
-        "ad_effect_2_type",
-        "ad_eq_high_freq",
-        "ad_eq_high_gain",
-        "ad_eq_low_freq",
-        "ad_eq_low_gain",
-        "ad_eq_mid_freq",
-        "ad_eq_mid_gain",
-        "ad_noise_gate_switch",
-        "ad_noise_gate_threshold",
-        "ad_volume",
-        "advanced_zone",
-        "audio_trigger_key",
-        "audio_trigger_play_mode",
-        "audio_trigger_switch",
-        "audio_trigger_volume",
-        "delay_depth",
-        "delay_switch",
-        "delay_tempo_time",
-        "delay_time",
-        "delay_type",
-        "foot_pedal_1_assign",
-        "foot_pedal_1_limit_high",
-        "foot_pedal_1_limit_low",
-        "foot_pedal_2_assign",
-        "foot_pedal_2_limit_high",
-        "foot_pedal_2_limit_low",
-        "layer_split_mode",
-        "live_set_eq_mode",
-        "master_keyboard_mode",
-        "mod_wheel_assign",
-        "name",
-        "reverb_depth",
-        "reverb_switch",
-        "reverb_type",
-        "rotary_speed",
-        "rotary_stop",
-        "sound_transpose",
-        "split_point",
-        "split_point_a_b",
-        "split_point_b_c",
-        "tempo_x10"
-      ],
       "properties": {
         "ad_effect_1_depth": {
           "description": "A/D effect 1 depth, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -172,6 +519,7 @@
         },
         "ad_effect_1_rate": {
           "description": "A/D effect 1 rate, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -179,6 +527,7 @@
         },
         "ad_effect_1_type": {
           "description": "A/D effect 1 type, raw 0x00..=0x22.",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 34.0,
@@ -186,6 +535,7 @@
         },
         "ad_effect_2_depth": {
           "description": "A/D effect 2 depth, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -193,6 +543,7 @@
         },
         "ad_effect_2_rate": {
           "description": "A/D effect 2 rate, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -200,6 +551,7 @@
         },
         "ad_effect_2_type": {
           "description": "A/D effect 2 type, raw 0x00..=0x22.",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 34.0,
@@ -207,6 +559,7 @@
         },
         "ad_eq_high_freq": {
           "description": "A/D input EQ high frequency, raw 0x1C..=0x3A.",
+          "default": 52,
           "type": "integer",
           "format": "uint8",
           "maximum": 58.0,
@@ -214,6 +567,7 @@
         },
         "ad_eq_high_gain": {
           "description": "A/D input EQ high gain, −12..=+12 dB.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 12.0,
@@ -221,6 +575,7 @@
         },
         "ad_eq_low_freq": {
           "description": "A/D input EQ low frequency, raw 0x04..=0x28.",
+          "default": 18,
           "type": "integer",
           "format": "uint8",
           "maximum": 40.0,
@@ -228,6 +583,7 @@
         },
         "ad_eq_low_gain": {
           "description": "A/D input EQ low gain, −12..=+12 dB.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 12.0,
@@ -235,6 +591,7 @@
         },
         "ad_eq_mid_freq": {
           "description": "A/D input EQ mid frequency, raw 0x0E..=0x36.",
+          "default": 41,
           "type": "integer",
           "format": "uint8",
           "maximum": 54.0,
@@ -242,6 +599,7 @@
         },
         "ad_eq_mid_gain": {
           "description": "A/D input EQ mid gain, −12..=+12 dB.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 12.0,
@@ -249,10 +607,12 @@
         },
         "ad_noise_gate_switch": {
           "description": "A/D input noise gate on/off.",
+          "default": false,
           "type": "boolean"
         },
         "ad_noise_gate_threshold": {
           "description": "Noise-gate threshold, raw 0x36..=0x61 (−73 .. −30 dB).",
+          "default": 82,
           "type": "integer",
           "format": "uint8",
           "maximum": 97.0,
@@ -260,6 +620,7 @@
         },
         "ad_volume": {
           "description": "A/D input channel volume, 0..=127.",
+          "default": 127,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -267,10 +628,12 @@
         },
         "advanced_zone": {
           "description": "Enables advanced zone settings for the external keyboard.",
+          "default": false,
           "type": "boolean"
         },
         "audio_trigger_key": {
           "description": "Which held key triggers the audio sample (lowest/highest).",
+          "default": "highest",
           "allOf": [
             {
               "$ref": "#/definitions/AudioTriggerKey"
@@ -279,6 +642,7 @@
         },
         "audio_trigger_play_mode": {
           "description": "Audio-trigger playback behaviour (OneShot, PlayStop, PlayPause, Hold).",
+          "default": "one_shot",
           "allOf": [
             {
               "$ref": "#/definitions/AudioTriggerPlayMode"
@@ -287,10 +651,12 @@
         },
         "audio_trigger_switch": {
           "description": "Audio-trigger sample playback on/off.",
+          "default": false,
           "type": "boolean"
         },
         "audio_trigger_volume": {
           "description": "Audio-trigger sample volume, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -298,6 +664,7 @@
         },
         "delay_depth": {
           "description": "Master Delay depth (send/mix amount), 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -305,10 +672,12 @@
         },
         "delay_switch": {
           "description": "Master delay on/off.",
+          "default": false,
           "type": "boolean"
         },
         "delay_tempo_time": {
           "description": "Tempo-delay note value, raw 0..=14.",
+          "default": 11,
           "type": "integer",
           "format": "uint8",
           "maximum": 14.0,
@@ -316,6 +685,7 @@
         },
         "delay_time": {
           "description": "Master Delay time, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -323,6 +693,7 @@
         },
         "delay_type": {
           "description": "Delay algorithm (Digital, Analog, Cross, Tempo).",
+          "default": "digital",
           "allOf": [
             {
               "$ref": "#/definitions/DelayType"
@@ -331,6 +702,7 @@
         },
         "foot_pedal_1_assign": {
           "description": "Foot Pedal 1 assignment, raw 0..=120.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 120.0,
@@ -338,6 +710,7 @@
         },
         "foot_pedal_1_limit_high": {
           "description": "Foot Pedal 1 upper limit, 0..=127.",
+          "default": 127,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -345,6 +718,7 @@
         },
         "foot_pedal_1_limit_low": {
           "description": "Foot Pedal 1 lower limit, 0..=127.",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -352,6 +726,7 @@
         },
         "foot_pedal_2_assign": {
           "description": "Foot Pedal 2 assignment, raw 0..=120.",
+          "default": 11,
           "type": "integer",
           "format": "uint8",
           "maximum": 120.0,
@@ -359,6 +734,7 @@
         },
         "foot_pedal_2_limit_high": {
           "description": "Foot Pedal 2 upper limit, 0..=127.",
+          "default": 127,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -366,6 +742,7 @@
         },
         "foot_pedal_2_limit_low": {
           "description": "Foot Pedal 2 lower limit, 0..=127.",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -373,6 +750,7 @@
         },
         "layer_split_mode": {
           "description": "Layer/split layout, raw 0..=3: 0=ABC, 1=A/BC, 2=AB/C, 3=A/B/C.",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 3.0,
@@ -380,14 +758,17 @@
         },
         "live_set_eq_mode": {
           "description": "Enables the per-Live-Set 3-band EQ.",
+          "default": false,
           "type": "boolean"
         },
         "master_keyboard_mode": {
           "description": "Enables Master Keyboard mode (external-zone control).",
+          "default": false,
           "type": "boolean"
         },
         "mod_wheel_assign": {
           "description": "Modulation wheel assignment, raw 0..=120 (control number; 120 = USB audio volume).",
+          "default": 1,
           "type": "integer",
           "format": "uint8",
           "maximum": 120.0,
@@ -395,6 +776,7 @@
         },
         "name": {
           "description": "Live Set name, up to 15 ASCII characters.",
+          "default": "Init",
           "type": "string"
         },
         "reserved": {
@@ -406,6 +788,7 @@
         },
         "reverb_depth": {
           "description": "Master Reverb depth (send/mix amount), 0..=127.",
+          "default": 20,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -413,10 +796,12 @@
         },
         "reverb_switch": {
           "description": "Master reverb on/off.",
+          "default": true,
           "type": "boolean"
         },
         "reverb_type": {
           "description": "Reverb algorithm (Hall, Room, Plate).",
+          "default": "hall",
           "allOf": [
             {
               "$ref": "#/definitions/ReverbType"
@@ -425,6 +810,7 @@
         },
         "rotary_speed": {
           "description": "Rotary speaker speed (slow/fast).",
+          "default": "slow",
           "allOf": [
             {
               "$ref": "#/definitions/RotarySpeed"
@@ -433,10 +819,12 @@
         },
         "rotary_stop": {
           "description": "Stops the rotary speaker (brake).",
+          "default": false,
           "type": "boolean"
         },
         "sound_transpose": {
           "description": "Sound transpose, −12..=+12 semitones.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 12.0,
@@ -444,6 +832,7 @@
         },
         "split_point": {
           "description": "Split point (two-way split), raw 1..=127 (note number).",
+          "default": 55,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -451,6 +840,7 @@
         },
         "split_point_a_b": {
           "description": "Split point A–B (three-way), raw 1..=127.",
+          "default": 55,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -458,6 +848,7 @@
         },
         "split_point_b_c": {
           "description": "Split point B–C (three-way), raw 2..=127.",
+          "default": 79,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -465,6 +856,7 @@
         },
         "tempo_x10": {
           "description": "Tempo ×10 (e.g. `1200` = 120.0 BPM); raw range 420..=2400.",
+          "default": 1200,
           "type": "integer",
           "format": "uint16",
           "maximum": 2400.0,
@@ -475,17 +867,10 @@
     "LiveSetEq": {
       "description": "The Live Set **EQ** block — a 3-band EQ, same layout as the System Master EQ.",
       "type": "object",
-      "required": [
-        "high_freq",
-        "high_gain",
-        "low_freq",
-        "low_gain",
-        "mid_freq",
-        "mid_gain"
-      ],
       "properties": {
         "high_freq": {
           "description": "High frequency, raw 0x1C..=0x3A.",
+          "default": 48,
           "type": "integer",
           "format": "uint8",
           "maximum": 58.0,
@@ -493,6 +878,7 @@
         },
         "high_gain": {
           "description": "High gain, −12..=+12 dB.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 12.0,
@@ -500,6 +886,7 @@
         },
         "low_freq": {
           "description": "Low frequency, raw 0x04..=0x28.",
+          "default": 12,
           "type": "integer",
           "format": "uint8",
           "maximum": 40.0,
@@ -507,6 +894,7 @@
         },
         "low_gain": {
           "description": "Low gain, −12..=+12 dB.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 12.0,
@@ -514,6 +902,7 @@
         },
         "mid_freq": {
           "description": "Mid frequency, raw 0x0E..=0x36.",
+          "default": 34,
           "type": "integer",
           "format": "uint8",
           "maximum": 54.0,
@@ -521,6 +910,7 @@
         },
         "mid_gain": {
           "description": "Mid gain, −12..=+12 dB.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 12.0,
@@ -555,64 +945,10 @@
     "Part": {
       "description": "One Live Set Part.",
       "type": "object",
-      "required": [
-        "amplifier_modulation_depth",
-        "category_voices",
-        "current_category",
-        "drawbars",
-        "drive_depth",
-        "drive_switch",
-        "drive_type",
-        "effect_1_depth",
-        "effect_1_rate",
-        "effect_1_switch",
-        "effect_1_type",
-        "effect_2_depth",
-        "effect_2_rate",
-        "effect_2_switch",
-        "effect_2_type",
-        "effect_select",
-        "eg_attack",
-        "eg_release",
-        "eg_switch",
-        "external_keyboard",
-        "filter_cutoff",
-        "filter_modulation_depth",
-        "filter_resonance",
-        "filter_switch",
-        "modulation_speed",
-        "mono_poly",
-        "mono_type",
-        "note_shift",
-        "pan",
-        "part_color",
-        "part_selected",
-        "part_switch",
-        "part_volume",
-        "percussion_decay",
-        "percussion_switch",
-        "percussion_type",
-        "percussion_volume",
-        "pitch_bend_range",
-        "pitch_modulation_depth",
-        "portamento_mode",
-        "portamento_time",
-        "receive_expression",
-        "receive_soft",
-        "receive_sostenuto",
-        "receive_sustain",
-        "touch_sensitivity_depth",
-        "touch_sensitivity_offset",
-        "unison_detune",
-        "unison_switch",
-        "unison_type",
-        "unison_volume",
-        "vibrato_chorus_switch",
-        "vibrato_chorus_type"
-      ],
       "properties": {
         "amplifier_modulation_depth": {
           "description": "Amplifier modulation depth, 0..=127.",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -620,6 +956,18 @@
         },
         "category_voices": {
           "description": "Selected voice number per category (10 entries). Each is the absolute voice number for that category — see [`crate::voices`].",
+          "default": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
           "type": "array",
           "items": {
             "type": "integer",
@@ -629,6 +977,7 @@
         },
         "current_category": {
           "description": "Active category, 0..=9 (indexes `category_voices`).",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 9.0,
@@ -636,6 +985,17 @@
         },
         "drawbars": {
           "description": "Organ drawbars, 9 entries: 16', 5⅓', 8', 4', 2⅔', 2', 1⅗', 1⅓', 1'.",
+          "default": [
+            127,
+            127,
+            127,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
           "type": "array",
           "items": {
             "type": "integer",
@@ -645,6 +1005,7 @@
         },
         "drive_depth": {
           "description": "Drive depth, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -652,10 +1013,12 @@
         },
         "drive_switch": {
           "description": "Enables the drive/amp stage.",
+          "default": false,
           "type": "boolean"
         },
         "drive_type": {
           "description": "Drive/amp model.",
+          "default": "over_drive",
           "allOf": [
             {
               "$ref": "#/definitions/DriveType"
@@ -664,6 +1027,7 @@
         },
         "effect_1_depth": {
           "description": "Effect 1 depth, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -671,6 +1035,7 @@
         },
         "effect_1_rate": {
           "description": "Effect 1 rate, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -678,10 +1043,12 @@
         },
         "effect_1_switch": {
           "description": "Insert effect 1 on/off.",
+          "default": false,
           "type": "boolean"
         },
         "effect_1_type": {
           "description": "Effect 1 type, raw 0x00..=0x23.",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 35.0,
@@ -689,6 +1056,7 @@
         },
         "effect_2_depth": {
           "description": "Effect 2 depth, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -696,6 +1064,7 @@
         },
         "effect_2_rate": {
           "description": "Effect 2 rate, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -703,10 +1072,12 @@
         },
         "effect_2_switch": {
           "description": "Insert effect 2 on/off.",
+          "default": false,
           "type": "boolean"
         },
         "effect_2_type": {
           "description": "Effect 2 type, raw 0x00..=0x23.",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 35.0,
@@ -714,6 +1085,7 @@
         },
         "effect_select": {
           "description": "Which insert-effect slot this part edits (Effect1/Effect2).",
+          "default": "effect1",
           "allOf": [
             {
               "$ref": "#/definitions/EffectSelect"
@@ -722,6 +1094,7 @@
         },
         "eg_attack": {
           "description": "EG attack, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -729,6 +1102,7 @@
         },
         "eg_release": {
           "description": "EG release, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -736,10 +1110,12 @@
         },
         "eg_switch": {
           "description": "Enables the amplitude envelope generator.",
+          "default": true,
           "type": "boolean"
         },
         "external_keyboard": {
           "description": "External-keyboard routing (ExtInt, ExtOnly, Off).",
+          "default": "ext_int",
           "allOf": [
             {
               "$ref": "#/definitions/ExternalKeyboard"
@@ -748,6 +1124,7 @@
         },
         "filter_cutoff": {
           "description": "Filter cutoff, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -755,6 +1132,7 @@
         },
         "filter_modulation_depth": {
           "description": "Filter modulation depth, 0..=127.",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -762,6 +1140,7 @@
         },
         "filter_resonance": {
           "description": "Filter resonance, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -769,10 +1148,12 @@
         },
         "filter_switch": {
           "description": "Enables the filter.",
+          "default": true,
           "type": "boolean"
         },
         "modulation_speed": {
           "description": "Modulation speed, −64..=+63.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 63.0,
@@ -780,6 +1161,7 @@
         },
         "mono_poly": {
           "description": "Plays this part monophonically or polyphonically.",
+          "default": "poly",
           "allOf": [
             {
               "$ref": "#/definitions/MonoPoly"
@@ -788,6 +1170,7 @@
         },
         "mono_type": {
           "description": "Mono/portamento behaviour (Normal, Fingered, Full-time).",
+          "default": "normal",
           "allOf": [
             {
               "$ref": "#/definitions/MonoType"
@@ -796,6 +1179,7 @@
         },
         "note_shift": {
           "description": "Note shift, −24..=+24 semitones.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 24.0,
@@ -803,6 +1187,7 @@
         },
         "pan": {
           "description": "Stereo pan, −63..=+63 (L63 .. C .. R63). Added in CK firmware v1.10 (Part block offset 0x1C; device-verified by capture-and-diff).",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 63.0,
@@ -810,6 +1195,7 @@
         },
         "part_color": {
           "description": "Part colour, 0..=11 (0=Red .. 11=Rose).",
+          "default": 2,
           "type": "integer",
           "format": "uint8",
           "maximum": 11.0,
@@ -817,14 +1203,17 @@
         },
         "part_selected": {
           "description": "Marks this part as the currently selected/edited part.",
+          "default": false,
           "type": "boolean"
         },
         "part_switch": {
           "description": "Turns this part on or off.",
+          "default": false,
           "type": "boolean"
         },
         "part_volume": {
           "description": "Part volume, 0..=127.",
+          "default": 127,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -832,6 +1221,7 @@
         },
         "percussion_decay": {
           "description": "Organ percussion decay (Slow or Fast).",
+          "default": "slow",
           "allOf": [
             {
               "$ref": "#/definitions/PercussionDecay"
@@ -840,10 +1230,12 @@
         },
         "percussion_switch": {
           "description": "Enables organ percussion.",
+          "default": false,
           "type": "boolean"
         },
         "percussion_type": {
           "description": "Organ percussion harmonic (Third or Second).",
+          "default": "third",
           "allOf": [
             {
               "$ref": "#/definitions/PercussionType"
@@ -852,6 +1244,7 @@
         },
         "percussion_volume": {
           "description": "Organ percussion volume (Normal or Soft).",
+          "default": "normal",
           "allOf": [
             {
               "$ref": "#/definitions/PercussionVolume"
@@ -860,6 +1253,7 @@
         },
         "pitch_bend_range": {
           "description": "Pitch bend range, −24..=+24 semitones.",
+          "default": 2,
           "type": "integer",
           "format": "int8",
           "maximum": 24.0,
@@ -867,6 +1261,7 @@
         },
         "pitch_modulation_depth": {
           "description": "Pitch modulation depth, 0..=127.",
+          "default": 10,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -874,6 +1269,7 @@
         },
         "portamento_mode": {
           "description": "Portamento time interpretation (Rate or Time).",
+          "default": "rate",
           "allOf": [
             {
               "$ref": "#/definitions/PortamentoMode"
@@ -882,6 +1278,7 @@
         },
         "portamento_time": {
           "description": "Portamento time, 0..=127.",
+          "default": 20,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -889,18 +1286,22 @@
         },
         "receive_expression": {
           "description": "This part responds to Expression (CC 11).",
+          "default": true,
           "type": "boolean"
         },
         "receive_soft": {
           "description": "This part responds to the Soft pedal (CC 67).",
+          "default": true,
           "type": "boolean"
         },
         "receive_sostenuto": {
           "description": "This part responds to the Sostenuto pedal (CC 66).",
+          "default": true,
           "type": "boolean"
         },
         "receive_sustain": {
           "description": "This part responds to the Sustain pedal (CC 64).",
+          "default": true,
           "type": "boolean"
         },
         "reserved": {
@@ -912,6 +1313,7 @@
         },
         "touch_sensitivity_depth": {
           "description": "Touch sensitivity depth, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -919,6 +1321,7 @@
         },
         "touch_sensitivity_offset": {
           "description": "Touch sensitivity offset, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -926,6 +1329,7 @@
         },
         "unison_detune": {
           "description": "Unison detune, 0..=127.",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -933,10 +1337,12 @@
         },
         "unison_switch": {
           "description": "Enables unison voicing.",
+          "default": false,
           "type": "boolean"
         },
         "unison_type": {
           "description": "Unison voicing (MultiLayer, Harmonics, SubHarmonics).",
+          "default": "multi_layer",
           "allOf": [
             {
               "$ref": "#/definitions/UnisonType"
@@ -945,6 +1351,7 @@
         },
         "unison_volume": {
           "description": "Unison volume, 0..=127.",
+          "default": 127,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -952,10 +1359,12 @@
         },
         "vibrato_chorus_switch": {
           "description": "Enables the organ vibrato/chorus scanner.",
+          "default": false,
           "type": "boolean"
         },
         "vibrato_chorus_type": {
           "description": "Vibrato/Chorus program (V1, C1, V2, C2, V3, C3).",
+          "default": "c3",
           "allOf": [
             {
               "$ref": "#/definitions/VibratoChorusType"
@@ -1056,29 +1465,10 @@
     "RotarySpeaker": {
       "description": "The Rotary Speaker block (Rotary A + Rotary B).\n\nBalance is a centred value (`0x40` = R=H — see [`balance_label`]); Stereo/Mono is typed. Speed / Acceleration / Transition stay raw `0..=127` indices: the manual documents only their rpm/ratio range + default (exposed via [`ROTARY_SPECS`]), and the device's per-step curve isn't published or derivable (Rotary A and B use different byte→rpm mappings), so no per-byte conversion is provided. Transition is itself a raw `0..=127` value.",
       "type": "object",
-      "required": [
-        "a_balance",
-        "a_horn_acceleration",
-        "a_horn_deceleration",
-        "a_horn_fast",
-        "a_horn_slow",
-        "a_rotor_acceleration",
-        "a_rotor_deceleration",
-        "a_rotor_fast",
-        "a_rotor_slow",
-        "a_stereo_mono",
-        "b_balance",
-        "b_horn_fast",
-        "b_horn_slow",
-        "b_horn_transition",
-        "b_rotor_fast",
-        "b_rotor_slow",
-        "b_rotor_transition",
-        "b_stereo_mono"
-      ],
       "properties": {
         "a_balance": {
           "description": "Rotary A balance (horn vs rotor), raw 0..=127 (R63>H .. R=H .. R<H63).",
+          "default": 70,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1086,6 +1476,7 @@
         },
         "a_horn_acceleration": {
           "description": "Rotary A horn acceleration index (0.21–2.00).",
+          "default": 70,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1093,6 +1484,7 @@
         },
         "a_horn_deceleration": {
           "description": "Rotary A horn deceleration index (0.21–2.00).",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1100,6 +1492,7 @@
         },
         "a_horn_fast": {
           "description": "Rotary A horn fast speed index (209.4–817.6 rpm).",
+          "default": 72,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1107,6 +1500,7 @@
         },
         "a_horn_slow": {
           "description": "Rotary A horn slow speed index (23.0–89.6 rpm).",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1114,6 +1508,7 @@
         },
         "a_rotor_acceleration": {
           "description": "Rotary A rotor acceleration index (0.21–2.00).",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1121,6 +1516,7 @@
         },
         "a_rotor_deceleration": {
           "description": "Rotary A rotor deceleration index (0.21–2.00).",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1128,6 +1524,7 @@
         },
         "a_rotor_fast": {
           "description": "Rotary A rotor fast speed index (189.3–736.8 rpm).",
+          "default": 72,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1135,6 +1532,7 @@
         },
         "a_rotor_slow": {
           "description": "Rotary A rotor slow speed index (22.7–88.3 rpm).",
+          "default": 64,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1142,6 +1540,7 @@
         },
         "a_stereo_mono": {
           "description": "Rotary A output: stereo or mono.",
+          "default": "stereo",
           "allOf": [
             {
               "$ref": "#/definitions/StereoMono"
@@ -1150,6 +1549,7 @@
         },
         "b_balance": {
           "description": "Rotary B balance, raw 0..=127.",
+          "default": 80,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1157,6 +1557,7 @@
         },
         "b_horn_fast": {
           "description": "Rotary B horn fast speed index (161.5–2382 rpm).",
+          "default": 91,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1164,6 +1565,7 @@
         },
         "b_horn_slow": {
           "description": "Rotary B horn slow speed index (2.5–159.0 rpm).",
+          "default": 22,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1171,6 +1573,7 @@
         },
         "b_horn_transition": {
           "description": "Rotary B horn transition, 0..=127 (default 118).",
+          "default": 118,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1178,6 +1581,7 @@
         },
         "b_rotor_fast": {
           "description": "Rotary B rotor fast speed index (161.5–2382 rpm).",
+          "default": 89,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1185,6 +1589,7 @@
         },
         "b_rotor_slow": {
           "description": "Rotary B rotor slow speed index (2.5–159.0 rpm).",
+          "default": 24,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1192,6 +1597,7 @@
         },
         "b_rotor_transition": {
           "description": "Rotary B rotor transition, 0..=127 (default 116).",
+          "default": 116,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1199,6 +1605,7 @@
         },
         "b_stereo_mono": {
           "description": "Rotary B output: stereo or mono.",
+          "default": "stereo",
           "allOf": [
             {
               "$ref": "#/definitions/StereoMono"
@@ -1254,24 +1661,10 @@
     "Zone": {
       "description": "One Zone.",
       "type": "object",
-      "required": [
-        "midi_bank_lsb",
-        "midi_bank_msb",
-        "midi_pan",
-        "midi_program",
-        "midi_volume",
-        "note_limit_high",
-        "note_limit_low",
-        "transmit",
-        "transmit_channel",
-        "transmit_controllers",
-        "transpose_octave",
-        "transpose_semitone",
-        "zone_switch"
-      ],
       "properties": {
         "midi_bank_lsb": {
           "description": "MIDI bank select LSB, 0..=127.",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1279,6 +1672,7 @@
         },
         "midi_bank_msb": {
           "description": "MIDI bank select MSB, 0..=127.",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1286,6 +1680,7 @@
         },
         "midi_pan": {
           "description": "MIDI pan, −64..=+63 (L64 .. C .. R63).",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 63.0,
@@ -1293,6 +1688,7 @@
         },
         "midi_program": {
           "description": "MIDI program number, raw 0..=127 (program 1–128).",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1300,6 +1696,7 @@
         },
         "midi_volume": {
           "description": "MIDI volume, 0..=127.",
+          "default": 127,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1307,6 +1704,7 @@
         },
         "note_limit_high": {
           "description": "Note limit high, 0..=127 (C-2 .. G8).",
+          "default": 127,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1314,6 +1712,7 @@
         },
         "note_limit_low": {
           "description": "Note limit low, 0..=127 (C-2 .. G8).",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 127.0,
@@ -1328,6 +1727,13 @@
         },
         "transmit": {
           "description": "Which snapshot messages (Bank/PC/Volume/Pan) this Zone sends.",
+          "default": {
+            "bank_select": true,
+            "pan": true,
+            "program_change": true,
+            "reserved_bits": 16,
+            "volume": true
+          },
           "allOf": [
             {
               "$ref": "#/definitions/ZoneTransmit"
@@ -1336,6 +1742,7 @@
         },
         "transmit_channel": {
           "description": "Transmit channel, raw `0..=0x0F` (= MIDI ch 1–16).",
+          "default": 0,
           "type": "integer",
           "format": "uint8",
           "maximum": 15.0,
@@ -1343,6 +1750,12 @@
         },
         "transmit_controllers": {
           "description": "Which live controllers this Zone forwards (Pitch Bend / Mod / FP1 / FP2).",
+          "default": {
+            "foot_pedal_1": true,
+            "foot_pedal_2": true,
+            "modulation": true,
+            "pitch_bend": true
+          },
           "allOf": [
             {
               "$ref": "#/definitions/ZoneTransmitControllers"
@@ -1351,6 +1764,7 @@
         },
         "transpose_octave": {
           "description": "Transpose (octave), −3..=+3.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 3.0,
@@ -1358,6 +1772,7 @@
         },
         "transpose_semitone": {
           "description": "Transpose (semitone), −11..=+11.",
+          "default": 0,
           "type": "integer",
           "format": "int8",
           "maximum": 11.0,
@@ -1365,6 +1780,7 @@
         },
         "zone_switch": {
           "description": "Enables this Zone's MIDI transmission.",
+          "default": false,
           "type": "boolean"
         }
       }
@@ -1372,23 +1788,20 @@
     "ZoneTransmit": {
       "description": "Which \"snapshot\" MIDI messages the Zone sends when its Live Set is loaded.\n\nThe byte at Zone offset `0x0C` is a bitmask. Bits 0–3 are named in the CK Owner's Manual; bit 4 sits inside the manual's documented `0x00..=0x1F` range without a published meaning. Any higher bits a device emits (defensive) are kept verbatim in `reserved_bits` so the block round-trips byte-exact.",
       "type": "object",
-      "required": [
-        "bank_select",
-        "pan",
-        "program_change",
-        "volume"
-      ],
       "properties": {
         "bank_select": {
           "description": "Bit 0: transmit Bank Select MSB+LSB.",
+          "default": false,
           "type": "boolean"
         },
         "pan": {
           "description": "Bit 3: transmit Pan (CC 10).",
+          "default": false,
           "type": "boolean"
         },
         "program_change": {
           "description": "Bit 1: transmit Program Change.",
+          "default": false,
           "type": "boolean"
         },
         "reserved_bits": {
@@ -1399,6 +1812,7 @@
         },
         "volume": {
           "description": "Bit 2: transmit Channel Volume (CC 7).",
+          "default": false,
           "type": "boolean"
         }
       }
@@ -1406,27 +1820,25 @@
     "ZoneTransmitControllers": {
       "description": "Which live controllers the Zone forwards to its transmit channel.\n\nByte at Zone offset `0x0D`. Bits 0–3 are documented; bits 4–5 fall inside the manual's `0x00..=0x3F` documented range without published meaning; higher bits are unexpected but preserved.",
       "type": "object",
-      "required": [
-        "foot_pedal_1",
-        "foot_pedal_2",
-        "modulation",
-        "pitch_bend"
-      ],
       "properties": {
         "foot_pedal_1": {
           "description": "Bit 2: transmit Foot Pedal 1.",
+          "default": false,
           "type": "boolean"
         },
         "foot_pedal_2": {
           "description": "Bit 3: transmit Foot Pedal 2.",
+          "default": false,
           "type": "boolean"
         },
         "modulation": {
           "description": "Bit 1: transmit Modulation Wheel (CC 1).",
+          "default": false,
           "type": "boolean"
         },
         "pitch_bend": {
           "description": "Bit 0: transmit Pitch Bend.",
+          "default": false,
           "type": "boolean"
         },
         "reserved_bits": {
