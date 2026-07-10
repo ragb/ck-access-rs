@@ -191,6 +191,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "ck-core",
+ "clap",
  "midi-access-cli",
  "midi-access-mcp",
 ]
@@ -631,7 +632,7 @@ checksum = "6b947ae49db0d222b1dbc6b113ce7248a3fc3a6ca21b696717bfc000ba4484d8"
 [[package]]
 name = "midi-access-cli"
 version = "0.1.0"
-source = "git+https://github.com/ragb/midi-access-kit?tag=v0.4.0#01b0aced94a6fb7da5cdadb26a6738eda5e599f6"
+source = "git+https://github.com/ragb/midi-access-kit?tag=v0.5.1#dd7a73d7a9054d1b43028c8cbd7f5aff6e21b84f"
 dependencies = [
  "anyhow",
  "clap",
@@ -648,7 +649,7 @@ dependencies = [
 [[package]]
 name = "midi-access-core"
 version = "0.1.0"
-source = "git+https://github.com/ragb/midi-access-kit?tag=v0.4.0#01b0aced94a6fb7da5cdadb26a6738eda5e599f6"
+source = "git+https://github.com/ragb/midi-access-kit?tag=v0.5.1#dd7a73d7a9054d1b43028c8cbd7f5aff6e21b84f"
 dependencies = [
  "schemars 0.8.22",
  "serde",
@@ -662,9 +663,10 @@ dependencies = [
 [[package]]
 name = "midi-access-mcp"
 version = "0.1.0"
-source = "git+https://github.com/ragb/midi-access-kit?tag=v0.4.0#01b0aced94a6fb7da5cdadb26a6738eda5e599f6"
+source = "git+https://github.com/ragb/midi-access-kit?tag=v0.5.1#dd7a73d7a9054d1b43028c8cbd7f5aff6e21b84f"
 dependencies = [
  "anyhow",
+ "midi-access-cli",
  "midi-access-core",
  "rmcp",
  "serde",

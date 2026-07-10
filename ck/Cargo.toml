@@ -21,3 +21,4 @@ ck-core = { workspace = true, features = ["schema"] }
 midi-access-cli = { workspace = true }
 midi-access-mcp = { workspace = true }
 anyhow = { workspace = true }
+clap = { workspace = true }
