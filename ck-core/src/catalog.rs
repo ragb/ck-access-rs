@@ -57,8 +57,13 @@ struct CatalogData {
     voices: Vec<VoiceEntry>,
     part_effects: &'static [effects::EffectInfo],
     ad_effects: &'static [effects::EffectInfo],
+    // The keys must match the names a `ParamMeta`'s `catalog` hint uses (and
+    // hence [`crate::resolve::CATALOG_NAMES`]), so a tool that reads
+    // `catalog: "eq_freq"` off a param can look that catalog up here.
+    #[serde(rename = "eq_freq")]
     eq_frequencies: &'static [eq::EqFreq],
     control_changes: &'static [cc::CcInfo],
+    #[serde(rename = "assign_target")]
     assign_targets: Vec<cc::AssignTarget>,
     rotary_specs: &'static [rotary::RotaryParamSpec],
 }
@@ -124,6 +129,36 @@ fn voice_entries() -> Vec<VoiceEntry> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// `Catalogs::as_value()` is documented as a mapping of catalog-name →
+    /// entries, and a `ParamMeta`'s `catalog` hint names one of those keys. If the
+    /// two drift, a tool that follows a hint (`catalog: "eq_freq"`) looks up a key
+    /// that isn't there and silently sees nothing.
+    #[test]
+    fn catalog_names_match_the_bundle_keys_and_every_param_hint() {
+        use midi_access_core::Catalogs;
+
+        let value = CK_CATALOGS.as_value();
+        let keys: Vec<&str> = value
+            .as_mapping()
+            .expect("as_value is a mapping")
+            .keys()
+            .map(|k| k.as_str().expect("string key"))
+            .collect();
+        assert_eq!(keys, crate::resolve::CATALOG_NAMES);
+
+        // Every catalog-hinted parameter points at a real key.
+        for m in params::PARAMS {
+            if let Some(cat) = m.catalog {
+                assert!(
+                    keys.contains(&cat),
+                    "param {} hints catalog {cat:?}, absent from the bundle",
+                    m.path
+                );
+                assert!(!value[cat].as_sequence().unwrap().is_empty());
+            }
+        }
+    }
 
     #[test]
     fn bundle_is_serializable_and_populated() {
