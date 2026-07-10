@@ -391,7 +391,10 @@ mod tests {
             Ck::store_to_flash(0, 20, 8).unwrap(),
         );
         // Alternate separators accepted.
-        assert_eq!(Ck::store("1/1", 0).unwrap().unwrap(), Ck::store_to_flash(0, 1, 1).unwrap());
+        assert_eq!(
+            Ck::store("1/1", 0).unwrap().unwrap(),
+            Ck::store_to_flash(0, 1, 1).unwrap()
+        );
         // Empty / malformed / out-of-range are errors (but Some, i.e. supported).
         assert!(Ck::store("", 0).unwrap().is_err());
         assert!(Ck::store("20", 0).unwrap().is_err());
