@@ -13,9 +13,9 @@ description = "Yamaha CK61 / CK88 SysEx codec, CLI, and WASM bindings."
 ck-core = { path = "ck-core" }
 # Shared foundation crates, pinned to the published kit. For local development
 # against an unreleased kit, point these at `path = "../midi-access-kit/<crate>"`.
-midi-access-core = { git = "https://github.com/ragb/midi-access-kit", tag = "v0.4.0" }
-midi-access-cli = { git = "https://github.com/ragb/midi-access-kit", tag = "v0.4.0" }
-midi-access-mcp = { git = "https://github.com/ragb/midi-access-kit", tag = "v0.4.0" }
+midi-access-core = { git = "https://github.com/ragb/midi-access-kit", tag = "v0.5.1" }
+midi-access-cli = { git = "https://github.com/ragb/midi-access-kit", tag = "v0.5.1" }
+midi-access-mcp = { git = "https://github.com/ragb/midi-access-kit", tag = "v0.5.1" }
 thiserror = "1"
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9"
