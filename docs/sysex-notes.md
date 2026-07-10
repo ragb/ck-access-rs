@@ -91,22 +91,23 @@ this sequence and the typed document; blocks this crate doesn't model
 A bulk dump — to the edit buffer (`0E 7F 00`) **or** to a User slot (`0E pp 0n`) —
 only writes the CK's working RAM. A slot-addressed dump reads back correctly while
 the keyboard stays powered, but is **lost on a power cycle** unless you commit it to
-flash. Committing is a separate **Store To Flash** step: a Bulk Dump to `0B 10 00`
-whose 6-byte payload is `00 0F <page-1> <sound-1> 00 00`, naming the destination
-slot. This is the SysEx equivalent of the panel STORE button and what the Melas CK
-editor's "Store" / "Store to…" send.
+flash. To persist a Live Set, do what the Melas editor does (verified by
+intercepting its MIDI output):
 
-The Owner's Manual lists a `0D 00 00` "Store To Flash" address, but this is **not**
-what performs the store — a capture of the Melas editor shows the `0B 10 00` Bulk
-Dump above; `0D 00 00` is unused. Device-verified example (store to slot 20-8):
+1. Dump every Live Set block bracketed to the **destination slot** — Bulk Header
+   `0E pp 0n`, the content blocks, Bulk Footer `0F pp 0n` (`pp` = page − 1,
+   `0n` = sound − 1), via [`bulk_header_for_slot`/`bulk_footer_for_slot`](../ck-core/src/address.rs).
+2. Send the data-less **Store To Flash** commit — a Bulk Dump to `0D 00 00`:
 
-```text
-F0 43 00 7F 1C 00 0A 0B 0B 10 00 00 0F 13 07 00 00 31 F7
-```
+   ```text
+   F0 43 00 7F 1C 00 04 0B 0D 00 00 68 F7
+   ```
 
-The Melas save flow is: dump every Live Set block to the **edit buffer**
-(`0E 7F 00` header … `0F 7F 00` footer), then send the store frame. See
-[`device::Ck::store_to_flash`](../ck-core/src/device.rs).
+That commit is the panel STORE button's SysEx equivalent; without it the slot dump
+never reaches flash. (An earlier read of a one-directional capture mistook the CK's
+`0B 10 00` *reply* for the store command — it is not; the real commit is the
+manual's `0D 00 00`.) See [`device::Ck::store_to_flash`](../ck-core/src/device.rs)
+and [`Ck::store`](../ck-core/src/device.rs), which builds the whole sequence.
 
 ## 3. Value encodings
 

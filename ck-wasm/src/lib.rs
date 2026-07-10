@@ -671,20 +671,19 @@ pub fn bulk_footer_for_slot_wasm(page: u8, sound: u8) -> Result<Vec<u8>, JsError
         .ok_or_else(|| JsError::new("page must be 1..=20 and sound must be 1..=8"))
 }
 
-/// Build the STORE TO FLASH frame that commits the CK's edit buffer to a
-/// non-volatile Live Set slot — the SysEx equivalent of the panel STORE
-/// button (and the Melas editor's "Store" / "Store to…"). A `bulkDump`
-/// alone only writes working RAM and is lost on a power cycle; after dumping
-/// the Live Set to the edit buffer (`bulkHeaderCurrentBuffer()` … blocks …
-/// `bulkFooterCurrentBuffer()`), send this frame to persist.
+/// Build the data-less STORE TO FLASH commit (`0D 00 00`) — the SysEx
+/// equivalent of the panel STORE button. This is the *tail* of a store, not
+/// the whole thing: to persist a Live Set to slot `page`/`sound` (1-based),
+/// first dump every block bracketed to that **slot** —
+/// `bulkHeaderForSlot(page, sound)` … content `bulkDump`s …
+/// `bulkFooterForSlot(page, sound)` — then send this commit. A slot dump alone
+/// only touches working RAM and is lost on a power cycle.
 ///
-/// `page`/`sound` are 1-based (1..=20 and 1..=8): the destination slot for
-/// "Store to…", or the currently-loaded slot for plain "Store". Out-of-range
-/// values are an error. (Device-verified: a Bulk Dump to `0B 10 00`.)
+/// (Verified by intercepting the Melas editor's output: `F0 43 00 7F 1C 00 04
+/// 0B 0D 00 00 68 F7`.)
 #[wasm_bindgen(js_name = storeToFlash)]
-pub fn store_to_flash(device: u8, page: u8, sound: u8) -> Result<Vec<u8>, JsError> {
-    ck_core::Ck::store_to_flash(device, page, sound)
-        .ok_or_else(|| JsError::new("page must be 1..=20 and sound must be 1..=8"))
+pub fn store_to_flash(device: u8) -> Vec<u8> {
+    ck_core::Ck::store_to_flash(device)
 }
 
 // === Live Set selection (Bank Select + Program Change) ===

@@ -13,7 +13,7 @@
 //! | Bulk Header (buffer) | `0E` | `7F` | `00`| —     |
 //! | Bulk Footer (slot)   | `0F` | `pp` | `0n`| —     |
 //! | Bulk Footer (buffer) | `0F` | `7F` | `00`| —     |
-//! | Store To Flash       | `0B` | `10` | `00`| 6     |
+//! | Store To Flash       | `0D` | `00` | `00`| 0     |
 //! | Live Set Common      | `46` | `00` | `00`| 83    |
 //! | Live Set EQ          | `46` | `40` | `00`| 20    |
 //! | Audio Trigger Path   | `46` | `10` | `00`| 255   |
@@ -29,15 +29,11 @@
 //! **Neither bulk dump persists on its own.** Both land in the CK's working
 //! RAM — a slot-addressed dump reads back correctly while the keyboard stays
 //! powered, but is lost on a power cycle. Committing to non-volatile flash is a
-//! *separate* step: a **Store To Flash** Bulk Dump to `0B 10 00` naming the
-//! destination slot (the panel STORE button's equivalent; see
-//! [`STORE_TO_FLASH_BASE`] and [`crate::device::Ck::store_to_flash`]). To
-//! persist a Live Set the way the Melas editor does: dump every block to the
-//! edit buffer (`0E 7F 00` … `0F 7F 00`), then send the store.
-//!
-//! (The Owner's Manual lists a `0D 00 00` "Store To Flash" address, but a
-//! capture of the Melas editor shows the store is actually the `0B 10 00`
-//! Bulk Dump below; `0D 00 00` is unused.)
+//! *separate* step: a data-less **Store To Flash** Bulk Dump to `0D 00 00`
+//! (the panel STORE button's equivalent; see [`STORE_TO_FLASH_BASE`]). To
+//! persist a Live Set the way the Melas editor does: dump every block bracketed
+//! to the destination **slot** (`0E pp 0n` … `0F pp 0n`), then send the Store
+//! To Flash commit. (Verified by intercepting the Melas editor's MIDI output.)
 
 /// Number of Zones in a Live Set (`zz` = 0..=3).
 pub const ZONE_COUNT: u8 = 4;
@@ -51,13 +47,15 @@ pub const LIVE_SET_SOUNDS_PER_PAGE: u8 = 8;
 pub const SYSTEM_COMMON_BASE: [u8; 3] = [0x20, 0x00, 0x00];
 pub const MASTER_EQ_BASE: [u8; 3] = [0x20, 0x40, 0x00];
 pub const SOUNDMONDO_VERSION_BASE: [u8; 3] = [0x00, 0x7F, 0x00];
-/// Address of the Store To Flash Bulk Dump — sent after dumping a Live Set to
-/// the edit buffer to commit it to a non-volatile slot (the panel STORE
-/// button). A bulk dump alone only writes working RAM and is lost on a power
-/// cycle. Its 6-byte payload names the destination slot; see
-/// [`crate::device::Ck::store_to_flash`]. (Device-verified by capturing the
-/// Melas CK editor — the manual's `0D 00 00` entry is unused.)
-pub const STORE_TO_FLASH_BASE: [u8; 3] = [0x0B, 0x10, 0x00];
+/// Address of the Store To Flash Bulk Dump — a **data-less** bulk dump the CK
+/// commits to flash. To persist a Live Set: dump it bracketed to the target
+/// **slot** (`0E pp 0n` … `0F pp 0n`, via [`bulk_header_for_slot`] /
+/// [`bulk_footer_for_slot`]), then send this frame. A slot dump alone only
+/// touches working RAM and is lost on a power cycle; this commit is what makes
+/// it stick (the panel STORE button / Melas's "Store to…"). Frame:
+/// `F0 43 00 7F 1C 00 04 0B 0D 00 00 68 F7`. (Device-verified by intercepting
+/// the Melas CK editor's output — this is the manual's `0D 00 00` after all.)
+pub const STORE_TO_FLASH_BASE: [u8; 3] = [0x0D, 0x00, 0x00];
 
 /// Bulk Header for the volatile edit buffer (whichever Live Set Sound the
 /// CK is currently playing). Use this to bracket `sendLiveSet`-style pushes
