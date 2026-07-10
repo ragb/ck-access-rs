@@ -7,8 +7,7 @@
 use ck_core::address::{
     bulk_footer_for_slot, bulk_header_for_slot, zone_base_address, Part as PartSlot,
     AUDIO_TRIGGER_PATH_BASE, BULK_FOOTER_CURRENT_BUFFER, BULK_HEADER_CURRENT_BUFFER,
-    LIVE_SET_COMMON_BASE, LIVE_SET_EQ_BASE, MASTER_EQ_BASE, STORE_TO_FLASH_BASE,
-    SYSTEM_COMMON_BASE,
+    LIVE_SET_COMMON_BASE, LIVE_SET_EQ_BASE, MASTER_EQ_BASE, SYSTEM_COMMON_BASE,
 };
 use ck_core::cc;
 use ck_core::effects;
@@ -672,13 +671,20 @@ pub fn bulk_footer_for_slot_wasm(page: u8, sound: u8) -> Result<Vec<u8>, JsError
         .ok_or_else(|| JsError::new("page must be 1..=20 and sound must be 1..=8"))
 }
 
-/// Address of the STORE TO FLASH parameter (`0D 00 00`). Listed in the
-/// Owner's Manual's Parameter Base Address table but with no documented
-/// data range — exposed here as a future hook; the saving path the editor
-/// uses goes through the slot-addressed bulk dump (`bulkHeaderForSlot`).
-#[wasm_bindgen(js_name = storeToFlashBase)]
-pub fn store_to_flash_base() -> Vec<u8> {
-    STORE_TO_FLASH_BASE.to_vec()
+/// Build the STORE TO FLASH frame that commits the CK's edit buffer to a
+/// non-volatile Live Set slot — the SysEx equivalent of the panel STORE
+/// button (and the Melas editor's "Store" / "Store to…"). A `bulkDump`
+/// alone only writes working RAM and is lost on a power cycle; after dumping
+/// the Live Set to the edit buffer (`bulkHeaderCurrentBuffer()` … blocks …
+/// `bulkFooterCurrentBuffer()`), send this frame to persist.
+///
+/// `page`/`sound` are 1-based (1..=20 and 1..=8): the destination slot for
+/// "Store to…", or the currently-loaded slot for plain "Store". Out-of-range
+/// values are an error. (Device-verified: a Bulk Dump to `0B 10 00`.)
+#[wasm_bindgen(js_name = storeToFlash)]
+pub fn store_to_flash(device: u8, page: u8, sound: u8) -> Result<Vec<u8>, JsError> {
+    ck_core::Ck::store_to_flash(device, page, sound)
+        .ok_or_else(|| JsError::new("page must be 1..=20 and sound must be 1..=8"))
 }
 
 // === Live Set selection (Bank Select + Program Change) ===
