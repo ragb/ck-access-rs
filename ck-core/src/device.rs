@@ -236,7 +236,16 @@ impl Device for Ck {
     /// (e.g. `"20-8"`); the CK has no store-in-place, so an empty `dest` is an
     /// error. Pair with a `sync live-set` (which writes the edit buffer): the
     /// engine sends the encoded blocks, then this frame.
-    fn store(dest: &str, ch: u8) -> Option<Result<Vec<u8>, DeviceError>> {
+    /// A *command store*: the CK commits its own edit buffer via a Store-To-Flash
+    /// frame, so the document and area it came from are irrelevant here. (Devices
+    /// with no save command — the Roland RE-202, say — instead re-encode `doc` to
+    /// the slot's address, which is why the hook carries them.)
+    fn store(
+        _area: &str,
+        _doc: &Value,
+        dest: &str,
+        ch: u8,
+    ) -> Option<Result<Vec<u8>, DeviceError>> {
         Some((|| {
             let (page, sound) = parse_slot(dest)?;
             Ck::store_to_flash(ch, page, sound).ok_or_else(|| {
@@ -387,18 +396,26 @@ mod tests {
     fn store_via_device_trait_parses_slot() {
         // "20-8" routes through parse_slot to the same bytes as store_to_flash.
         assert_eq!(
-            Ck::store("20-8", 0).unwrap().unwrap(),
+            Ck::store("live-set", &Value::Null, "20-8", 0)
+                .unwrap()
+                .unwrap(),
             Ck::store_to_flash(0, 20, 8).unwrap(),
         );
         // Alternate separators accepted.
         assert_eq!(
-            Ck::store("1/1", 0).unwrap().unwrap(),
+            Ck::store("live-set", &Value::Null, "1/1", 0)
+                .unwrap()
+                .unwrap(),
             Ck::store_to_flash(0, 1, 1).unwrap()
         );
         // Empty / malformed / out-of-range are errors (but Some, i.e. supported).
-        assert!(Ck::store("", 0).unwrap().is_err());
-        assert!(Ck::store("20", 0).unwrap().is_err());
-        assert!(Ck::store("21-1", 0).unwrap().is_err());
+        assert!(Ck::store("live-set", &Value::Null, "", 0).unwrap().is_err());
+        assert!(Ck::store("live-set", &Value::Null, "20", 0)
+            .unwrap()
+            .is_err());
+        assert!(Ck::store("live-set", &Value::Null, "21-1", 0)
+            .unwrap()
+            .is_err());
     }
 
     #[test]
