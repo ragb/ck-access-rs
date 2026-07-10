@@ -14,7 +14,7 @@ use midi_access_core::{Area, Catalogs, Device, DeviceError, Inbound, Params};
 
 use crate::address::{
     AddressSpace, BULK_FOOTER_CURRENT_BUFFER, BULK_HEADER_CURRENT_BUFFER, MASTER_EQ_BASE,
-    SYSTEM_COMMON_BASE,
+    STORE_TO_FLASH_BASE, SYSTEM_COMMON_BASE,
 };
 use crate::document::AddressedBlock;
 use crate::sysex::Message;
@@ -52,6 +52,24 @@ fn dec(e: impl std::fmt::Display) -> DeviceError {
 }
 fn enc(e: impl std::fmt::Display) -> DeviceError {
     DeviceError::Encode(e.to_string())
+}
+
+/// Parse a `--store` destination like `"20-8"` into `(page, sound)`, both
+/// 1-based. Accepts `-`, `/`, `.`, or `,` as the separator.
+fn parse_slot(dest: &str) -> Result<(u8, u8), DeviceError> {
+    let dest = dest.trim();
+    let (p, s) = dest
+        .split_once(['-', '/', '.', ','])
+        .ok_or_else(|| enc(format!("store needs a slot like `20-8`, got {dest:?}")))?;
+    let page = p
+        .trim()
+        .parse::<u8>()
+        .map_err(|_| enc(format!("bad page in {dest:?}")))?;
+    let sound = s
+        .trim()
+        .parse::<u8>()
+        .map_err(|_| enc(format!("bad sound in {dest:?}")))?;
+    Ok((page, sound))
 }
 
 /// Collect the `(address, data)` of every Bulk Dump frame in a raw dump stream.
@@ -213,6 +231,22 @@ impl Device for Ck {
         }
     }
 
+    /// Commit the edit buffer to a persistent Live Set slot (the panel STORE
+    /// button). `dest` is the destination slot as `"page-sound"`, 1-based
+    /// (e.g. `"20-8"`); the CK has no store-in-place, so an empty `dest` is an
+    /// error. Pair with a `sync live-set` (which writes the edit buffer): the
+    /// engine sends the encoded blocks, then this frame.
+    fn store(dest: &str, ch: u8) -> Option<Result<Vec<u8>, DeviceError>> {
+        Some((|| {
+            let (page, sound) = parse_slot(dest)?;
+            Ck::store_to_flash(ch, page, sound).ok_or_else(|| {
+                enc(format!(
+                    "slot {dest:?} out of range (page 1..=20, sound 1..=8)"
+                ))
+            })
+        })())
+    }
+
     fn classify_inbound(bytes: &[u8]) -> Inbound {
         match classify_inbound(bytes) {
             InboundMessage::BulkDump {
@@ -252,6 +286,41 @@ impl Device for Ck {
     }
 }
 
+impl Ck {
+    /// Build the Store To Flash frame that commits the CK's edit buffer to a
+    /// non-volatile Live Set slot — the SysEx equivalent of the panel STORE
+    /// button (and the Melas editor's "Store" / "Store to…").
+    ///
+    /// A bulk dump alone — even one bracketed to a User slot with
+    /// [`bulk_header_for_slot`](crate::address::bulk_header_for_slot) — only
+    /// writes working RAM and is lost on a power cycle. To persist an edit the
+    /// way the Melas editor does: dump the whole Live Set to the edit buffer
+    /// (via [`encode`](Self::encode)), then send this frame naming the
+    /// destination slot. For plain "Store" (in place) pass the slot the Live
+    /// Set was loaded from — there is no coordinate-less store on the wire.
+    ///
+    /// `page`/`sound` are 1-based (1..=20, 1..=8) to match the CK's display;
+    /// returns `None` if either is out of range.
+    ///
+    /// Wire format (device-verified against a Melas capture): a Bulk Dump to
+    /// [`STORE_TO_FLASH_BASE`] (`0B 10 00`) with data `00 0F <page-1>
+    /// <sound-1> 00 00` — e.g. slot 20-8 → `F0 43 00 7F 1C 00 0A 0B 0B 10 00
+    /// 00 0F 13 07 00 00 31 F7`.
+    pub fn store_to_flash(ch: u8, page: u8, sound: u8) -> Option<Vec<u8>> {
+        // Reuse the slot range check (1..=20, 1..=8).
+        crate::address::bulk_header_for_slot(page, sound)?;
+        let data = vec![0x00, 0x0F, page - 1, sound - 1, 0x00, 0x00];
+        Some(
+            Message::BulkDump {
+                device: ch,
+                address: STORE_TO_FLASH_BASE,
+                data,
+            }
+            .encode(),
+        )
+    }
+}
+
 /// Which area a dump's address space belongs to, for inbound classification.
 fn area_for_space(space: AddressSpace) -> Option<String> {
     match space {
@@ -285,6 +354,51 @@ mod tests {
         let back = Ck::decode("live-set", &bytes).unwrap();
         let ls2: LiveSet = serde_yaml::from_value(back).unwrap();
         assert_eq!(ls, ls2);
+    }
+
+    #[test]
+    fn store_to_flash_frames_match_capture() {
+        // Byte-exact against the Melas CK editor capture (docs/sysex-notes.md).
+        // Slot 1-1 → data 00 0F 00 00 00 00, checksum 4B.
+        assert_eq!(
+            Ck::store_to_flash(0, 1, 1).unwrap(),
+            vec![
+                0xF0, 0x43, 0x00, 0x7F, 0x1C, 0x00, 0x0A, 0x0B, 0x0B, 0x10, 0x00, 0x00, 0x0F, 0x00,
+                0x00, 0x00, 0x00, 0x4B, 0xF7,
+            ],
+        );
+        // Slot 20-8 → data 00 0F 13 07 00 00, checksum 31.
+        assert_eq!(
+            Ck::store_to_flash(0, 20, 8).unwrap(),
+            vec![
+                0xF0, 0x43, 0x00, 0x7F, 0x1C, 0x00, 0x0A, 0x0B, 0x0B, 0x10, 0x00, 0x00, 0x0F, 0x13,
+                0x07, 0x00, 0x00, 0x31, 0xF7,
+            ],
+        );
+        // Device number rides the low nibble of byte 2.
+        assert_eq!(Ck::store_to_flash(3, 1, 1).unwrap()[2], 0x03);
+        // Out-of-range slots are rejected.
+        assert!(Ck::store_to_flash(0, 0, 1).is_none());
+        assert!(Ck::store_to_flash(0, 21, 1).is_none());
+        assert!(Ck::store_to_flash(0, 1, 9).is_none());
+    }
+
+    #[test]
+    fn store_via_device_trait_parses_slot() {
+        // "20-8" routes through parse_slot to the same bytes as store_to_flash.
+        assert_eq!(
+            Ck::store("20-8", 0).unwrap().unwrap(),
+            Ck::store_to_flash(0, 20, 8).unwrap(),
+        );
+        // Alternate separators accepted.
+        assert_eq!(
+            Ck::store("1/1", 0).unwrap().unwrap(),
+            Ck::store_to_flash(0, 1, 1).unwrap()
+        );
+        // Empty / malformed / out-of-range are errors (but Some, i.e. supported).
+        assert!(Ck::store("", 0).unwrap().is_err());
+        assert!(Ck::store("20", 0).unwrap().is_err());
+        assert!(Ck::store("21-1", 0).unwrap().is_err());
     }
 
     #[test]
